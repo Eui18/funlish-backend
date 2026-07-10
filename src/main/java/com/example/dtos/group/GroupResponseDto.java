@@ -4,15 +4,15 @@ public class GroupResponseDto {
     private String id;
     private String name;
     private Integer semester;
+    private String group;
     private String accessCode;
-    private String teacherId;
 
-    public GroupResponseDto (String id, String name, Integer semester, String accessCode, String teacherId) {
+    public GroupResponseDto (String id, String name, Integer semester, String group, String accessCode) {
         this.id = id;
         this.name = name;
         this.semester = semester;
+        this.group = group;
         this.accessCode = accessCode;
-        this.teacherId = teacherId; 
     }
 
     public String getId() {
@@ -27,12 +27,11 @@ public class GroupResponseDto {
         return semester;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
     public String getAccessCode() {
         return accessCode;
     }
-
-    public String getTeacherId() {
-        return teacherId;
-    }
-
 }

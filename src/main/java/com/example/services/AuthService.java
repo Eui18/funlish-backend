@@ -99,8 +99,8 @@ private void validateTeacher(CreateUserDto dto) {
         throw new ValidationException(List.of("La matrícula del docente debe tener exactamente 4 dígitos."));
     }
 
-    if (!dto.getEmail().matches("^[A-Za-z]+\\d{4}@.+$")) {
-        throw new ValidationException(List.of("El correo del docente debe iniciar con letras seguidas de 4 dígitos."));
+    if (!dto.getEmail().matches("^[A-Za-z]+@.+$")) {
+        throw new ValidationException(List.of("El correo del docente debe iniciar con letras"));
     }
 
     String emailPrefix = dto.getEmail().split("@")[0];

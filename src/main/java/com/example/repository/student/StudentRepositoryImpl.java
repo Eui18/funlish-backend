@@ -57,7 +57,7 @@ public class StudentRepositoryImpl implements StudentRepository  {
         String sql = """
                 UPDATE USUARIO
                 SET id_grupo = ?
-                WHERE id = ?
+                WHERE id = ? and rol = 'STUDENT'
                 """;
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

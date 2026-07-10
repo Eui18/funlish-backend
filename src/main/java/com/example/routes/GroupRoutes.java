@@ -21,5 +21,8 @@ public class GroupRoutes {
         app.post("/groups", groupController::create);
         app.patch("/groups/{id}", groupController::update);
         app.delete("/groups/{id}", groupController::delete);
+
+        app.get("/groups/{id}/students", groupController::findStudents);
+        app.get("/groups/{id}/students/count", groupController::countStudents);
     }
 }

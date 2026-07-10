@@ -1,5 +1,6 @@
 package com.example.services;
 
+import com.example.dtos.group.GroupResponseDto;
 import com.example.dtos.group.JoinGroupDto;
 import com.example.exceptions.NotFoundException;
 import com.example.exceptions.ValidationException;
@@ -41,5 +42,28 @@ public class StudentService {
                         new NotFoundException("Código de grupo inválido."));
 
         studentRepository.joinGroup(student.getId(), group.getId());
+    }
+
+    public GroupResponseDto findGroup(String studentId) {
+
+        User student = studentRepository.findById(studentId)
+                .orElseThrow(() ->
+                        new NotFoundException("Alumno no encontrado."));
+
+        if (student.getGroupId() == null) {
+            throw new NotFoundException("El alumno no pertenece a ningún grupo.");
+        }
+
+        Group group = groupRepository.findById(student.getGroupId())
+                .orElseThrow(() ->
+                        new NotFoundException("El grupo del alumno no existe."));
+
+        return new GroupResponseDto(
+                group.getId(),
+                group.getName(),
+                group.getSemester(),
+                group.getGroup(),
+                group.getAccessCode()
+        );
     }
 }

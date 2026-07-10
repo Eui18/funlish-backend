@@ -61,6 +61,7 @@ public class AuthRepositoryImpl implements AuthRepository {
 
     }
 
+    
     @Override
     public User registerUser(User user) {
 

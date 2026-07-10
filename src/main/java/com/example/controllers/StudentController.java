@@ -23,4 +23,11 @@ public class StudentController {
         service.joinGroup(studentId, dto);
         context.status(200).json(new MessageResponseDto("Alumno unido correctamente al grupo"));
     }
+
+    public void findGroup(Context context) {
+
+        String studentId = context.pathParam("studentId");
+        var response = service.findGroup(studentId);
+        context.status(200).json(response);
+    }
 }

@@ -3,10 +3,11 @@ package com.example.models.group;
 public class Group {
 
     private String id;
-    private String teacherId;
     private String name;
     private int semester;
+    private String group;
     private String accessCode;
+     private String teacherId;
 
 
     public Group() {
@@ -16,11 +17,13 @@ public class Group {
             String id,
             String name,
             Integer semester,
+            String group,
             String accessCode,
             String teacherId) {
         this.id = id;
         this.name = name;
         this.semester = semester;
+        this.group = group;
         this.accessCode = accessCode;
         this.teacherId = teacherId;
     }
@@ -47,6 +50,14 @@ public class Group {
 
     public void setSemester(Integer semester) {
         this.semester = semester;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
     }
 
     public String getAccessCode() {

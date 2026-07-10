@@ -14,5 +14,6 @@ public class StudentRoutes {
     public void register(Javalin app) {
 
         app.post("/students/{studentId}/group", studentController::joinGroup);
+        app.get("/students/{studentId}/group", studentController::findGroup);
     }
 }

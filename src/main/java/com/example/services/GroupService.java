@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.example.dtos.group.CreateGroupDto;
 import com.example.dtos.group.GroupResponseDto;
 import com.example.dtos.group.UpdateGroupDto;
+import com.example.dtos.users.UserResponseDto;
 import com.example.exceptions.NotFoundException;
 import com.example.exceptions.ResourceAlreadyExistsException;
 import com.example.exceptions.ValidationException;
@@ -67,7 +68,8 @@ public class GroupService {
         }
 
         Optional<Group> optional = repository.findExist(
-                dto.getName(),
+                dto.getSemester(),
+                dto.getGroup(),
                 dto.getTeacherId()
         );
 
@@ -81,6 +83,7 @@ public class GroupService {
                 UUID.randomUUID().toString(),
                 dto.getName(),
                 dto.getSemester(),
+                dto.getGroup(),
                 code,
                 dto.getTeacherId()
         );
@@ -92,22 +95,19 @@ public class GroupService {
 
     public GroupResponseDto update(String id, UpdateGroupDto dto) {
 
-        Optional<Group> optional = repository.findById(id);
-
-        if (optional.isEmpty()) {
-            throw new NotFoundException("Grupo no encontrado.");
-        }
-
-        Group group = optional.get();
-
+        Group group = repository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Grupo no encontrado.")
+                );
         if (dto.getName() != null) {
+
+            if (dto.getName().isBlank()) {
+                throw new ValidationException(
+                        List.of("El nombre del grupo no puede estar vacío.")
+                );
+            }
             group.setName(dto.getName());
         }
-
-        if (dto.getSemester() != null) {
-            group.setSemester(dto.getSemester());
-        }
-
         boolean updated = repository.update(group);
 
         if (!updated) {
@@ -124,6 +124,19 @@ public class GroupService {
         if (!deleted) {
             throw new NotFoundException("Grupo no encontrado.");
         }
+    }
+
+
+   public List<UserResponseDto> findStudents(String groupId) {
+        repository.findById(groupId)
+                .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
+        return repository.findStudents(groupId);
+    }
+
+    public int countStudents(String groupId) {
+        repository.findById(groupId)
+                .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
+        return repository.countStudents(groupId);
     }
 
 
@@ -159,8 +172,8 @@ public class GroupService {
                 group.getId(),
                 group.getName(),
                 group.getSemester(),
-                group.getAccessCode(),
-                group.getTeacherId()
+                group.getGroup(),
+                group.getAccessCode()
         );
     }
 }

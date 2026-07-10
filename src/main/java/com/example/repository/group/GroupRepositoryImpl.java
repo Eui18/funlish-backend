@@ -7,7 +7,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import com.example.dtos.users.UserResponseDto;
 import com.example.models.group.Group;
+import com.example.models.user.Role;
 
 public class GroupRepositoryImpl implements GroupRepository{
 
@@ -26,6 +29,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                     id, 
                     nombre AS name, 
                     cuatrimestre AS semester, 
+                    grupo AS group,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
                     FROM GRUPO 
@@ -55,6 +59,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                     id, 
                     nombre AS name, 
                     cuatrimestre AS semester, 
+                    grupo AS group,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
                     FROM GRUPO 
@@ -80,15 +85,16 @@ public class GroupRepositoryImpl implements GroupRepository{
     @Override
     public Group create(Group group){
         String sql = """
-                INSERT INTO GRUPO (id, id_docente, nombre, cuatrimestre, codigo_acceso)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO grupo(id,id_docente,nombre,cuatrimestre,grupo,codigo_acceso)
+                VALUES(?,?,?,?,?,?)
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, group.getId());
             statement.setString(2, group.getTeacherId());
             statement.setString(3, group.getName());
             statement.setInt(4, group.getSemester());
-            statement.setString(5, group.getAccessCode());
+            statement.setString(5, group.getGroup());
+            statement.setString(6, group.getAccessCode());
 
             int rows = statement.executeUpdate();
 
@@ -151,14 +157,13 @@ public class GroupRepositoryImpl implements GroupRepository{
 
         String sql = """
                 UPDATE GRUPO
-                SET nombre = ?, cuatrimestre = ?
+                SET nombre = ?
                 WHERE id = ?
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, group.getName());
-            statement.setInt(2, group.getSemester());
-            statement.setString(3, group.getId());
+            statement.setString(2, group.getId());
 
             int rows = statement.executeUpdate();
 
@@ -172,20 +177,22 @@ public class GroupRepositoryImpl implements GroupRepository{
     
 
     @Override
-    public Optional<Group> findExist(String name, String teacherId) {
+    public Optional<Group> findExist( Integer semester, String group, String teacherId) {
         String sql = """
                     SELECT
                     id, 
                     nombre AS name, 
                     cuatrimestre AS semester, 
+                    grupo AS group,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
                     FROM GRUPO 
-                    WHERE nombre = ? and id_docente = ? 
+                    WHERE cuatrimestre = ? and grupo = ? and id_docente = ? 
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)){
-            statement.setString(1, name);
-            statement.setString(2, teacherId);
+            statement.setInt(1,semester);
+            statement.setString(2,group);
+            statement.setString(3,teacherId);
 
             try (ResultSet resultSet = statement.executeQuery();) {
                 
@@ -209,6 +216,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                     id,
                     nombre AS name,
                     cuatrimestre AS semester,
+                    grupo AS group,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
                 FROM GRUPO
@@ -233,6 +241,76 @@ public class GroupRepositoryImpl implements GroupRepository{
         }
     }
 
+   @Override
+    public List<UserResponseDto> findStudents(String groupId) {
+
+        List<UserResponseDto> students = new ArrayList<>();
+
+        String sql = """
+                SELECT
+                    id,
+                    nombre AS name,
+                    matricula AS tuition,
+                    correo AS email,
+                    rol AS role
+                FROM USUARIO
+                WHERE id_grupo = ?
+                AND rol = 'STUDENT'
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, groupId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                while (resultSet.next()) {
+
+                    students.add(new UserResponseDto(
+                            resultSet.getString("id"),
+                            resultSet.getString("name"),
+                            resultSet.getString("tuition"),
+                            resultSet.getString("email"),
+                            Role.valueOf(resultSet.getString("role"))
+                    ));
+                }
+            }
+            return students;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener los alumnos del grupo.", e);
+        }
+    }
+
+
+    @Override
+    public int countStudents(String groupId) {
+
+        String sql = """
+                SELECT COUNT(*)
+                FROM USUARIO
+                WHERE id_grupo = ?
+                AND rol = 'STUDENT'
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, groupId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+
+                return 0;
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al contar alumnos.", e);
+        }
+    }
+
+
 
     private Group mapGroup(ResultSet resultSet) throws SQLException {
 
@@ -240,6 +318,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                 resultSet.getString("id"),
                 resultSet.getString("name"),
                 resultSet.getInt("semester"),
+                resultSet.getString("group"),
                 resultSet.getString("accessCode"),
                 resultSet.getString("teacherId")
         );

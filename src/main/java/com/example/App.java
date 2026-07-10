@@ -22,6 +22,10 @@ public class App {
             container.authRoutes.register(app);
             container.groupRoutes.register(app);
             container.studentRoutes.register(app);
+            container.unitRoutes.register(app);
+            container.topicRoutes.register(app);
+            container.resourceRoutes.register(app);
+            container.activityRoutes.register(app);
 
             app.start(7000);
 
