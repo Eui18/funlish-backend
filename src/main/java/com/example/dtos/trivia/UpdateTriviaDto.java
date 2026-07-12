@@ -1,28 +1,26 @@
 package com.example.dtos.trivia;
 
 import java.util.List;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
+
 
 public class UpdateTriviaDto {
 
     private String statement;
-    private List<String> options;
 
-    public UpdateTriviaDto() {
+    @Size(min = 4, max = 4, message = "Debe tener exactamente 4 opciones.")
+    @Valid
+    private List<OptionDto> options;
+
+    public UpdateTriviaDto(){
     }
 
     public String getStatement() {
         return statement;
     }
 
-    public void setStatement(String statement) {
-        this.statement = statement;
-    }
-
-    public List<String> getOptions() {
+    public List<OptionDto> getOptions() {
         return options;
-    }
-
-    public void setOptions(List<String> options) {
-        this.options = options;
     }
 }

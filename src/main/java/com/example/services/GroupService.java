@@ -29,14 +29,28 @@ public class GroupService {
         this.authRepository = authRepository;
     }
 
-    public List<GroupResponseDto> findAll(String teacherId) {
+   public List<GroupResponseDto> findAll(String teacherId) {
+
+        Optional<User> user = authRepository.findById(teacherId);
+
+        if (user.isEmpty()) {
+            throw new NotFoundException("El docente no existe");
+        }
+
+        if (user.get().getRole() != Role.TEACHER) {
+            throw new ValidationException(
+                    List.of("El usuario no es docente")
+            );
+        }
 
         List<Group> groups = repository.findAll(teacherId);
+
         List<GroupResponseDto> response = new ArrayList<>();
 
-        for(Group group : groups){
+        for (Group group : groups) {
             response.add(toResponseDto(group));
         }
+
         return response;
     }
 

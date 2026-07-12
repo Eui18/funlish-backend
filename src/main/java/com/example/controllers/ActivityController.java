@@ -16,54 +16,56 @@ public class ActivityController {
         this.activityService = activityService;
     }
 
-    public void create(Context ctx) {
+   public void create(Context context) {
 
-        CreateActivityDto dto = ctx.bodyAsClass(CreateActivityDto.class);
+        CreateActivityDto dto = context.bodyAsClass(CreateActivityDto.class);
 
-        String teacherId = ctx.pathParam("teacherId");
+        String teacherId = context.pathParam("teacherId");
+        String topicId = context.pathParam("topicId");
 
-        activityService.create(dto, teacherId);
+        activityService.create(dto, teacherId, topicId);
 
-        ctx.status(201).json(Map.of(
+        context.status(201).json(Map.of(
                 "message", "Actividad creada correctamente."));
     }
 
-    public void update(Context ctx) {
 
-        UpdateActivityDto dto = ctx.bodyAsClass(UpdateActivityDto.class);
+    public void update(Context context) {
+
+        UpdateActivityDto dto = context.bodyAsClass(UpdateActivityDto.class);
 
         activityService.update(
-                ctx.pathParam("id"),
+                context.pathParam("id"),
                 dto);
 
-        ctx.json(Map.of(
+        context.json(Map.of(
                 "message", "Actividad actualizada correctamente."));
     }
 
-    public void publish(Context ctx) {
+    public void publish(Context context) {
 
-        activityService.publish(ctx.pathParam("id"));
+        activityService.publish(context.pathParam("id"));
 
-        ctx.json(Map.of(
+        context.json(Map.of(
                 "message", "Actividad publicada."));
     }
 
-    public void delete(Context ctx) {
+    public void delete(Context context) {
 
-        activityService.delete(ctx.pathParam("id"));
+        activityService.delete(context.pathParam("id"));
 
-        ctx.json(Map.of(
+        context.json(Map.of(
                 "message", "Actividad eliminada."));
     }
 
-    public void findById(Context ctx) {
+    public void findById(Context context) {
 
-        ctx.json(activityService.findById(ctx.pathParam("id")));
+        context.json(activityService.findById(context.pathParam("id")));
     }
 
-    public void findAll(Context ctx) {
+    public void findAll(Context context) {
 
-        ctx.json(activityService.findAll(ctx.pathParam("topicId")));
+        context.json(activityService.findAll(context.pathParam("topicId")));
     }
 
 }

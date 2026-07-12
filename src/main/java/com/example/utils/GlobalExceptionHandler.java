@@ -14,8 +14,7 @@ public class GlobalExceptionHandler {
         app.exception(ValidationException.class, (e, ctx) -> {
             ctx.status(400).json(Map.of(
                     "success", false,
-                    "message", e.getMessage(),
-                    "errors", e.getErrors()
+                    "message", e.getMessage()
             ));
         });
 

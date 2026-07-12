@@ -29,7 +29,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                     id, 
                     nombre AS name, 
                     cuatrimestre AS semester, 
-                    grupo AS group,
+                    grupo AS `group`,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
                     FROM GRUPO 
@@ -59,7 +59,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                     id, 
                     nombre AS name, 
                     cuatrimestre AS semester, 
-                    grupo AS group,
+                    grupo AS `group`,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
                     FROM GRUPO 
@@ -183,7 +183,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                     id, 
                     nombre AS name, 
                     cuatrimestre AS semester, 
-                    grupo AS group,
+                    grupo AS `group`,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
                     FROM GRUPO 
@@ -216,7 +216,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                     id,
                     nombre AS name,
                     cuatrimestre AS semester,
-                    grupo AS group,
+                    grupo AS `group`,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
                 FROM GRUPO

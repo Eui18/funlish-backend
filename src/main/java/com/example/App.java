@@ -26,6 +26,7 @@ public class App {
             container.topicRoutes.register(app);
             container.resourceRoutes.register(app);
             container.activityRoutes.register(app);
+            container.triviaRoutes.register(app);
 
             app.start(7000);
 

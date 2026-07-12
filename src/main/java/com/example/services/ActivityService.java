@@ -29,29 +29,27 @@ public class ActivityService {
 
 
     // Crear actividad
-    public void create(CreateActivityDto dto, String teacherId) {
+    public void create(CreateActivityDto dto, String teacherId, String topicId) {
 
         DtoValidator.validate(dto);
 
-
         // Verificar que exista el tema
-        if (topicRepository.findById(dto.getTopicId()).isEmpty()) {
-
+        if (topicRepository.findById(topicId).isEmpty()) {
             throw new IllegalArgumentException("El tema no existe.");
         }
 
         // Evitar títulos repetidos dentro del mismo tema
         if (activityRepository.existsByTitle(
-                dto.getTopicId(),
+                topicId,
                 dto.getTitle())) {
 
-            throw new IllegalArgumentException("Ya existe una actividad con ese título." );
+            throw new IllegalArgumentException(
+                    "Ya existe una actividad con ese título.");
         }
-
 
         Activity activity = new Activity(
                 UUID.randomUUID().toString(),
-                dto.getTopicId(),
+                topicId,
                 teacherId,
                 dto.getTitle(),
                 dto.getDescription(),
@@ -61,7 +59,6 @@ public class ActivityService {
                 ActivityStatus.DRAFT,
                 LocalDateTime.now()
         );
-
 
         activityRepository.create(activity);
     }
@@ -80,24 +77,28 @@ public class ActivityService {
                                 "Actividad no encontrada."
                         ));
 
-
-        if (activityRepository.hasStudentAttempts(id)) {
+        if (dto.getTitle() != null && !dto.getTitle().equalsIgnoreCase(activity.getTitle()) && activityRepository.existsByTitle(
+                activity.getTopicId(),
+                dto.getTitle())) {
 
             throw new IllegalArgumentException(
-                    "La actividad ya tiene intentos registrados y no puede modificarse."
-            );
+                    "Ya existe una actividad con ese título.");
         }
 
+        if(activity.getStatus() != ActivityStatus.DRAFT){
+
+            throw new IllegalArgumentException(
+                "Solo se pueden modificar actividades en borrador."
+            );
+        }
 
         if (dto.getTitle() != null) {
             activity.setTitle(dto.getTitle());
         }
 
-
         if (dto.getDescription() != null) {
             activity.setDescription(dto.getDescription());
         }
-
 
         if (dto.getType() != null) {
 
@@ -106,7 +107,6 @@ public class ActivityService {
             );
         }
 
-
         if (dto.getDurationMinutes() != null) {
 
             activity.setDurationMinutes(
@@ -114,15 +114,12 @@ public class ActivityService {
             );
         }
 
-
         if (dto.getScorePerQuestion() != null) {
 
             activity.setScorePerQuestion(
                     dto.getScorePerQuestion()
             );
         }
-
-
         activityRepository.update(activity);
     }
 
@@ -137,15 +134,12 @@ public class ActivityService {
                                 "Actividad no encontrada."
                         ));
 
-
         if (activity.getStatus() == ActivityStatus.PUBLISHED) {
 
             throw new IllegalArgumentException(
                     "La actividad ya fue publicada."
             );
         }
-
-
         activityRepository.publish(id);
     }
 
@@ -160,15 +154,12 @@ public class ActivityService {
                                 "Actividad no encontrada."
                         ));
 
-
         if (activityRepository.hasStudentAttempts(id)) {
 
             throw new IllegalArgumentException(
                     "No es posible eliminar una actividad con intentos registrados."
             );
         }
-
-
         activityRepository.delete(id);
     }
 
@@ -182,8 +173,6 @@ public class ActivityService {
                         new IllegalArgumentException(
                                 "Actividad no encontrada."
                         ));
-
-
         return map(activity);
     }
 

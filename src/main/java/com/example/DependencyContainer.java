@@ -9,6 +9,7 @@ import com.example.controllers.GroupController;
 import com.example.controllers.ResourceController;
 import com.example.controllers.StudentController;
 import com.example.controllers.TopicController;
+import com.example.controllers.TriviaController;
 import com.example.controllers.UnitController;
 import com.example.repository.activity.ActivityRepositoryImpl;
 import com.example.repository.auth.AuthRepositoryImpl;
@@ -16,6 +17,7 @@ import com.example.repository.group.GroupRepositoryImpl;
 import com.example.repository.resource.ResourceRepositoryImpl;
 import com.example.repository.student.StudentRepositoryImpl;
 import com.example.repository.topic.TopicRepositoryImpl;
+import com.example.repository.trivia.TriviaRepositoryImpl;
 import com.example.repository.unit.UnitRepositoryImpl;
 import com.example.routes.ActivityRoutes;
 import com.example.routes.AuthRoutes;
@@ -23,12 +25,14 @@ import com.example.routes.GroupRoutes;
 import com.example.routes.ResourceRoutes;
 import com.example.routes.StudentRoutes;
 import com.example.routes.TopicRoutes;
+import com.example.routes.TriviaRoutes;
 import com.example.routes.UnitRoutes;
 import com.example.services.ActivityService;
 import com.example.services.AuthService;
 import com.example.services.GroupService;
 import com.example.services.StudentService;
 import com.example.services.TopicService;
+import com.example.services.TriviaService;
 import com.example.services.UnitService;
 
 public class DependencyContainer {
@@ -40,6 +44,7 @@ public class DependencyContainer {
     public final TopicRoutes topicRoutes;
     public final ResourceRoutes resourceRoutes;
     public final ActivityRoutes activityRoutes;
+    public final TriviaRoutes triviaRoutes;
 
     public DependencyContainer(Connection connection) {
 
@@ -84,6 +89,12 @@ public class DependencyContainer {
         var activityService = new ActivityService(activityRepository, topicRepository);
         var activityController = new ActivityController(activityService);
         this.activityRoutes = new ActivityRoutes(activityController);
+
+        //trivia
+        var triviaRepository = new TriviaRepositoryImpl(connection);
+        var triviaService = new TriviaService(triviaRepository, activityRepository);
+        var triviaController = new TriviaController(triviaService);
+        this.triviaRoutes = new TriviaRoutes(triviaController);
 
     }
 
