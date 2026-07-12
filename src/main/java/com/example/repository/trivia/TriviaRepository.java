@@ -21,4 +21,9 @@ public interface TriviaRepository {
     void reorderQuestions(String activityId);
 
     List<TriviaQuestion> findAll(String activityId);
+
+    void update(TriviaQuestion question);
+
+    void updateOptions(String triviaId, List<Option> options);
+
 }

@@ -103,6 +103,59 @@ public class TriviaRepositoryImpl implements TriviaRepository {
 
 
     @Override
+    public void update(TriviaQuestion question) {
+
+        String sql = """
+                UPDATE actividad_trivia
+                SET enunciado = ?
+                WHERE id = ?
+                """;
+
+        try(PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, question.getStatement());
+            ps.setString(2, question.getId());
+
+            ps.executeUpdate();
+
+        }catch(SQLException e) {
+
+            throw new RuntimeException(
+                    "Error actualizando pregunta: " + e.getMessage()
+            );
+        }
+    }
+
+
+    @Override
+    public void updateOptions(String triviaId, List<Option> options) {
+
+        String deleteSql = """
+                DELETE FROM opcion
+                WHERE id_trivia = ?
+                """;
+
+        try(PreparedStatement ps = connection.prepareStatement(deleteSql)) {
+
+            ps.setString(1, triviaId);
+
+            ps.executeUpdate();
+
+        }catch(SQLException e) {
+
+            throw new RuntimeException(
+                    "Error eliminando opciones anteriores: " + e.getMessage()
+            );
+        }
+
+
+        for(Option option : options) {
+            createOption(option);
+        }
+    }
+
+
+    @Override
     public Optional<TriviaQuestion> findById(String id) {
 
         String sql = """

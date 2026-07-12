@@ -3,31 +3,43 @@ package com.example;
 import java.sql.Connection;
 
 import com.example.services.ResourceService;
+import com.example.services.ScrambleService;
+import com.example.services.StudentGameService;
 import com.example.controllers.ActivityController;
+import com.example.controllers.ActivityStudentController;
 import com.example.controllers.AuthController;
 import com.example.controllers.GroupController;
 import com.example.controllers.ResourceController;
+import com.example.controllers.ScrambleController;
 import com.example.controllers.StudentController;
+import com.example.controllers.StudentGameController;
 import com.example.controllers.TopicController;
 import com.example.controllers.TriviaController;
 import com.example.controllers.UnitController;
 import com.example.repository.activity.ActivityRepositoryImpl;
+import com.example.repository.activityStudent.ActivityStudentRepositoryImpl;
+import com.example.repository.activityStudent.StudentGameRepositoryImpl;
 import com.example.repository.auth.AuthRepositoryImpl;
 import com.example.repository.group.GroupRepositoryImpl;
 import com.example.repository.resource.ResourceRepositoryImpl;
+import com.example.repository.scramble.ScrambleRepositoryImpl;
 import com.example.repository.student.StudentRepositoryImpl;
 import com.example.repository.topic.TopicRepositoryImpl;
 import com.example.repository.trivia.TriviaRepositoryImpl;
 import com.example.repository.unit.UnitRepositoryImpl;
 import com.example.routes.ActivityRoutes;
+import com.example.routes.ActivityStudentRoutes;
 import com.example.routes.AuthRoutes;
 import com.example.routes.GroupRoutes;
 import com.example.routes.ResourceRoutes;
+import com.example.routes.ScrambleRoutes;
+import com.example.routes.StudentGameRoutes;
 import com.example.routes.StudentRoutes;
 import com.example.routes.TopicRoutes;
 import com.example.routes.TriviaRoutes;
 import com.example.routes.UnitRoutes;
 import com.example.services.ActivityService;
+import com.example.services.ActivityStudentService;
 import com.example.services.AuthService;
 import com.example.services.GroupService;
 import com.example.services.StudentService;
@@ -45,6 +57,9 @@ public class DependencyContainer {
     public final ResourceRoutes resourceRoutes;
     public final ActivityRoutes activityRoutes;
     public final TriviaRoutes triviaRoutes;
+    public final ScrambleRoutes scrambleRoutes;
+    public final ActivityStudentRoutes activityStudentRoutes;
+    public final StudentGameRoutes studentGameRoutes;
 
     public DependencyContainer(Connection connection) {
 
@@ -96,6 +111,28 @@ public class DependencyContainer {
         var triviaController = new TriviaController(triviaService);
         this.triviaRoutes = new TriviaRoutes(triviaController);
 
-    }
+        //scramble
+        var scrambleRepository = new ScrambleRepositoryImpl(connection);
+        var scrambleService = new ScrambleService(scrambleRepository, activityRepository);
+        var scrambleController = new ScrambleController(scrambleService);
+        this.scrambleRoutes = new ScrambleRoutes(scrambleController);
+
+        //actividad estudiante
+        var activityStudentRepository = new ActivityStudentRepositoryImpl(connection);
+        var activityStudentService = new ActivityStudentService(activityStudentRepository, activityRepository, authRepository);
+        var activityStudentController = new ActivityStudentController(activityStudentService);
+        this.activityStudentRoutes = new ActivityStudentRoutes(activityStudentController);
+
+        //student game
+        // Student Game
+        var studentGameRepository = new StudentGameRepositoryImpl(connection);
+        var studentGameService = new StudentGameService(
+                studentGameRepository,
+                activityStudentRepository,
+                activityRepository
+        );
+        var studentGameController = new StudentGameController(studentGameService);
+        this.studentGameRoutes = new StudentGameRoutes(studentGameController);
+        }
 
 }

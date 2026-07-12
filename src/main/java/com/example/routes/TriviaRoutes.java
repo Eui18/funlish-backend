@@ -23,7 +23,11 @@ public class TriviaRoutes {
                 triviaController::findAll);
 
         app.delete(
-                "/trivia/{id}",
+                "/activities/trivia/{id}",
                 triviaController::delete);
+        app.put(
+        "/activities/{activityId}/trivia/{id}",
+        triviaController::update
+);
     }
 }

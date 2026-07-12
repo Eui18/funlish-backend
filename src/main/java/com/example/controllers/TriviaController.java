@@ -3,6 +3,7 @@ package com.example.controllers;
 import java.util.Map;
 
 import com.example.dtos.trivia.CreateTriviaDto;
+import com.example.dtos.trivia.UpdateTriviaDto;
 import com.example.services.TriviaService;
 
 import io.javalin.http.Context;
@@ -27,6 +28,19 @@ public class TriviaController {
     public void findAll(Context context) {
 
         context.json(triviaService.findAll(context.pathParam("activityId")));
+    }
+
+    public void update(Context context){
+
+        UpdateTriviaDto dto = context.bodyAsClass(UpdateTriviaDto.class);
+
+        triviaService.update(context.pathParam("id"), dto);
+
+        context.json(Map.of(
+                    "message",
+                    "Pregunta actualizada correctamente."
+                )
+        );
     }
 
     public void delete(Context context) {
