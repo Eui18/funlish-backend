@@ -1,203 +1,233 @@
 package com.example.services;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import com.example.dtos.activity.ActivityResponseDto;
 import com.example.dtos.activity.CreateActivityDto;
 import com.example.dtos.activity.UpdateActivityDto;
-import com.example.exceptions.NotFoundException;
-import com.example.exceptions.ResourceAlreadyExistsException;
-import com.example.exceptions.ValidationException;
 import com.example.models.activity.Activity;
+import com.example.models.activity.ActivityStatus;
 import com.example.models.activity.ActivityType;
 import com.example.repository.activity.ActivityRepository;
 import com.example.repository.topic.TopicRepository;
+import com.example.utils.DtoValidator;
 
 public class ActivityService {
 
     private final ActivityRepository activityRepository;
     private final TopicRepository topicRepository;
 
-    public ActivityService(ActivityRepository activityRepository, TopicRepository topicRepository) {
+    public ActivityService(
+            ActivityRepository activityRepository,
+            TopicRepository topicRepository) {
+
         this.activityRepository = activityRepository;
         this.topicRepository = topicRepository;
     }
 
 
-    public ActivityResponseDto create(String topicId, String teacherId, CreateActivityDto dto) {
+    // Crear actividad
+    public void create(CreateActivityDto dto, String teacherId) {
 
-        if (topicRepository.findById(topicId).isEmpty()) {
-            throw new NotFoundException("El tema especificado no fue encontrado.");
+        DtoValidator.validate(dto);
+
+
+        // Verificar que exista el tema
+        if (topicRepository.findById(dto.getTopicId()).isEmpty()) {
+
+            throw new IllegalArgumentException("El tema no existe.");
         }
 
-        if (activityRepository.existsByTitle(topicId, dto.getTitle())) {
-            throw new ResourceAlreadyExistsException("Ya existe una actividad con este título en este tema.");
+        // Evitar títulos repetidos dentro del mismo tema
+        if (activityRepository.existsByTitle(
+                dto.getTopicId(),
+                dto.getTitle())) {
+
+            throw new IllegalArgumentException("Ya existe una actividad con ese título." );
         }
 
-        LocalDate start = LocalDate.parse(dto.getStartDate());
-        LocalDate end = LocalDate.parse(dto.getEndDate());
-        LocalTime startTime = LocalTime.parse(dto.getStartTime());
-        LocalTime endTime = LocalTime.parse(dto.getEndTime());
-
-        validateDates(start, end, startTime, endTime);
-
-        ActivityType type;
-        try {
-            type = ActivityType.valueOf(dto.getType().toUpperCase());
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new ValidationException(List.of("Tipo de actividad no válido. Valores permitidos: TRIVIA, SCRAMBLE."));
-        }
 
         Activity activity = new Activity(
                 UUID.randomUUID().toString(),
-                topicId,
+                dto.getTopicId(),
                 teacherId,
                 dto.getTitle(),
                 dto.getDescription(),
-                type,
-                dto.getMaxScore(),
+                parseType(dto.getType()),
                 dto.getDurationMinutes(),
-                start,
-                end,
-                startTime,
-                endTime
+                dto.getScorePerQuestion(),
+                ActivityStatus.DRAFT,
+                LocalDateTime.now()
         );
 
-        activityRepository.create(activity);
 
-        return toResponseDto(activity);
+        activityRepository.create(activity);
     }
 
 
-    public ActivityResponseDto update(String id, UpdateActivityDto dto) {
+
+    // Actualizar
+    public void update(String id, UpdateActivityDto dto) {
+
+        DtoValidator.validate(dto);
+
 
         Activity activity = activityRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("La actividad no fue encontrada."));
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Actividad no encontrada."
+                        ));
+
 
         if (activityRepository.hasStudentAttempts(id)) {
-            throw new ValidationException(List.of("La actividad no puede modificarse porque los alumnos ya comenzaron a realizarla."));
+
+            throw new IllegalArgumentException(
+                    "La actividad ya tiene intentos registrados y no puede modificarse."
+            );
         }
 
+
         if (dto.getTitle() != null) {
-            if (!activity.getTitle().equals(dto.getTitle())
-                    && activityRepository.existsByTitle(activity.getTopicId(), dto.getTitle(), id)) {
-                throw new ResourceAlreadyExistsException("Ya existe una actividad con ese título.");
-            }
             activity.setTitle(dto.getTitle());
         }
+
 
         if (dto.getDescription() != null) {
             activity.setDescription(dto.getDescription());
         }
 
+
         if (dto.getType() != null) {
-            try {
-                activity.setType(ActivityType.valueOf(dto.getType().toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                throw new ValidationException(List.of("Tipo de actividad no válido. Use TRIVIA o SCRAMBLE."));
-            }
+
+            activity.setType(
+                    parseType(dto.getType())
+            );
         }
 
-        if (dto.getMaxScore() != null) {
-            activity.setMaxScore(dto.getMaxScore());
-        }
 
         if (dto.getDurationMinutes() != null) {
-            activity.setDurationMinutes(dto.getDurationMinutes());
+
+            activity.setDurationMinutes(
+                    dto.getDurationMinutes()
+            );
         }
 
-        if (dto.getStartDate() != null) {
-            activity.setStartDate(LocalDate.parse(dto.getStartDate()));
+
+        if (dto.getScorePerQuestion() != null) {
+
+            activity.setScorePerQuestion(
+                    dto.getScorePerQuestion()
+            );
         }
 
-        if (dto.getEndDate() != null) {
-            activity.setEndDate(LocalDate.parse(dto.getEndDate()));
-        }
-
-        if (dto.getStartTime() != null) {
-            activity.setStartTime(LocalTime.parse(dto.getStartTime()));
-        }
-
-        if (dto.getEndTime() != null) {
-            activity.setEndTime(LocalTime.parse(dto.getEndTime()));
-        }
-
-        validateDates(
-                activity.getStartDate(),
-                activity.getEndDate(),
-                activity.getStartTime(),
-                activity.getEndTime()
-        );
 
         activityRepository.update(activity);
-
-        return toResponseDto(activity);
     }
 
 
-    public List<ActivityResponseDto> findAll(String topicId) {
 
-        if (topicRepository.findById(topicId).isEmpty()) {
-            throw new NotFoundException("El tema especificado no fue encontrado.");
+    // Publicar
+    public void publish(String id) {
+
+        Activity activity = activityRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Actividad no encontrada."
+                        ));
+
+
+        if (activity.getStatus() == ActivityStatus.PUBLISHED) {
+
+            throw new IllegalArgumentException(
+                    "La actividad ya fue publicada."
+            );
         }
+
+
+        activityRepository.publish(id);
+    }
+
+
+
+    // Eliminar
+    public void delete(String id) {
+
+        Activity activity = activityRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Actividad no encontrada."
+                        ));
+
+
+        if (activityRepository.hasStudentAttempts(id)) {
+
+            throw new IllegalArgumentException(
+                    "No es posible eliminar una actividad con intentos registrados."
+            );
+        }
+
+
+        activityRepository.delete(id);
+    }
+
+
+
+    // Buscar por id
+    public ActivityResponseDto findById(String id) {
+
+        Activity activity = activityRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Actividad no encontrada."
+                        ));
+
+
+        return map(activity);
+    }
+
+
+
+    // Listar actividades por tema
+    public List<ActivityResponseDto> findAll(String topicId) {
 
         return activityRepository.findAll(topicId)
                 .stream()
-                .map(this::toResponseDto)
+                .map(this::map)
                 .toList();
     }
 
 
-    public ActivityResponseDto findById(String id) {
+    // Validar tipo de actividad
+    private ActivityType parseType(String type) {
 
-        Activity activity = activityRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("La actividad no fue encontrada."));
+        try {
 
-        return toResponseDto(activity);
-    }
+            return ActivityType.valueOf(
+                    type.toUpperCase()
+            );
 
+        } catch (Exception e) {
 
-    public void delete(String id) {
-
-        Activity activity = activityRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("La actividad no fue encontrada."));
-
-        if (activityRepository.hasStudentAttempts(id)) {
-            throw new ValidationException(List.of("La actividad no puede eliminarse porque los alumnos ya han iniciado intentos."));
-        }
-
-        activityRepository.delete(activity.getId());
-    }
-
-
-    private void validateDates(LocalDate start, LocalDate end, LocalTime startHour, LocalTime endHour) {
-
-        if (end.isBefore(start)) {
-            throw new ValidationException(List.of("La fecha de finalización no puede ser anterior a la fecha de inicio."));
-        }
-
-        if (start.equals(end) && endHour.isBefore(startHour)) {
-            throw new ValidationException(List.of("La hora de finalización no puede ser anterior a la hora de inicio."));
+            throw new IllegalArgumentException(
+                    "Tipo de actividad no válido."
+            );
         }
     }
 
-
-    private ActivityResponseDto toResponseDto(Activity activity) {
+    // Convertir Model -> DTO
+    private ActivityResponseDto map(Activity activity) {
 
         return new ActivityResponseDto(
                 activity.getId(),
+                activity.getTopicId(),
                 activity.getTitle(),
                 activity.getDescription(),
                 activity.getType().name(),
-                activity.getMaxScore(),
                 activity.getDurationMinutes(),
-                activity.getStartDate().toString(),
-                activity.getEndDate().toString(),
-                activity.getStartTime().toString(),
-                activity.getEndTime().toString()
+                activity.getScorePerQuestion(),
+                activity.getStatus().name()
         );
     }
 }

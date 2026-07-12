@@ -3,45 +3,40 @@ package com.example.dtos.activity;
 public class ActivityResponseDto {
 
     private String id;
+    private String topicId;
     private String title;
     private String description;
     private String type;
-    private int maxScore;
-    private int durationMinutes;
-    private String startDate;
-    private String endDate;
-    private String startTime;
-    private String endTime;
-
-    public ActivityResponseDto() {
-    }
+    private Integer durationMinutes;
+    private Integer scorePerQuestion;
+    private String status;
 
     public ActivityResponseDto(
             String id,
+            String topicId,
             String title,
             String description,
             String type,
-            int maxScore,
-            int durationMinutes,
-            String startDate,
-            String endDate,
-            String startTime,
-            String endTime) {
+            Integer durationMinutes,
+            Integer scorePerQuestion,
+            String status) {
 
         this.id = id;
+        this.topicId = topicId;
         this.title = title;
         this.description = description;
         this.type = type;
-        this.maxScore = maxScore;
         this.durationMinutes = durationMinutes;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.scorePerQuestion = scorePerQuestion;
+        this.status = status;
     }
 
     public String getId() {
         return id;
+    }
+
+    public String getTopicId() {
+        return topicId;
     }
 
     public String getTitle() {
@@ -56,27 +51,15 @@ public class ActivityResponseDto {
         return type;
     }
 
-    public int getMaxScore() {
-        return maxScore;
-    }
-
-    public int getDurationMinutes() {
+    public Integer getDurationMinutes() {
         return durationMinutes;
     }
 
-    public String getStartDate() {
-        return startDate;
+    public Integer getScorePerQuestion() {
+        return scorePerQuestion;
     }
 
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public String getStartTime() {
-        return startTime;
-    }
-
-    public String getEndTime() {
-        return endTime;
+    public String getStatus() {
+        return status;
     }
 }

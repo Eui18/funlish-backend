@@ -7,19 +7,19 @@ import com.example.models.activity.Activity;
 
 public interface ActivityRepository {
 
-    Activity create(Activity activity);
+    void create(Activity activity);
 
-    List<Activity> findAll(String topicId);
+    void update(Activity activity);
+
+    void publish(String activityId);
+
+    void delete(String id);
 
     Optional<Activity> findById(String id);
 
-    boolean update(Activity activity);
-
-    boolean delete(String id);
+    List<Activity> findAll(String topicId);
 
     boolean existsByTitle(String topicId, String title);
-
-    boolean existsByTitle(String topicId, String title, String activityId);
 
     boolean hasStudentAttempts(String activityId);
 }

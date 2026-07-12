@@ -15,6 +15,7 @@ public class ActivityRoutes {
         app.get("/topics/{topicId}/activities", activityController::findAll);
         app.get("/activities/{id}", activityController::findById);
         app.patch("/activities/{id}", activityController::update);
+        app.patch("/activities/{id}/publish", activityController::publish);
         app.delete("/activities/{id}", activityController::delete);
     }
 }

@@ -1,46 +1,69 @@
 package com.example.controllers;
 
+import io.javalin.http.Context;
+
+import java.util.Map;
+
 import com.example.dtos.activity.CreateActivityDto;
 import com.example.dtos.activity.UpdateActivityDto;
 import com.example.services.ActivityService;
-import com.example.utils.DtoValidator;
-import io.javalin.http.Context;
 
 public class ActivityController {
+
     private final ActivityService activityService;
 
     public ActivityController(ActivityService activityService) {
         this.activityService = activityService;
     }
 
-    public void create(Context context) {
-        String topicId = context.pathParam("topicId");
-        String teacherId = context.pathParam("teacherId");
-        CreateActivityDto dto = context.bodyAsClass(CreateActivityDto.class);
-        DtoValidator.validate(dto);
-        context.status(201).json(activityService.create(topicId, teacherId, dto));
+    public void create(Context ctx) {
+
+        CreateActivityDto dto = ctx.bodyAsClass(CreateActivityDto.class);
+
+        String teacherId = ctx.pathParam("teacherId");
+
+        activityService.create(dto, teacherId);
+
+        ctx.status(201).json(Map.of(
+                "message", "Actividad creada correctamente."));
     }
 
-    public void findAll(Context context) {
-        String topicId = context.pathParam("topicId");
-        context.json(activityService.findAll(topicId));
+    public void update(Context ctx) {
+
+        UpdateActivityDto dto = ctx.bodyAsClass(UpdateActivityDto.class);
+
+        activityService.update(
+                ctx.pathParam("id"),
+                dto);
+
+        ctx.json(Map.of(
+                "message", "Actividad actualizada correctamente."));
     }
 
-    public void findById(Context context) {
-        String id = context.pathParam("id");
-        context.json(activityService.findById(id));
+    public void publish(Context ctx) {
+
+        activityService.publish(ctx.pathParam("id"));
+
+        ctx.json(Map.of(
+                "message", "Actividad publicada."));
     }
 
-    public void update(Context context) {
-        String id = context.pathParam("id");
-        UpdateActivityDto dto = context.bodyAsClass(UpdateActivityDto.class);
-        DtoValidator.validate(dto);
-        context.json(activityService.update(id, dto));
+    public void delete(Context ctx) {
+
+        activityService.delete(ctx.pathParam("id"));
+
+        ctx.json(Map.of(
+                "message", "Actividad eliminada."));
     }
 
-    public void delete(Context context) {
-        String id = context.pathParam("id");
-        activityService.delete(id);
-        context.status(204);
+    public void findById(Context ctx) {
+
+        ctx.json(activityService.findById(ctx.pathParam("id")));
     }
+
+    public void findAll(Context ctx) {
+
+        ctx.json(activityService.findAll(ctx.pathParam("topicId")));
+    }
+
 }
