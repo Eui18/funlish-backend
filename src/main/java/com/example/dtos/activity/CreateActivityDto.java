@@ -8,50 +8,44 @@ import jakarta.validation.constraints.Size;
 public class CreateActivityDto {
 
     @NotBlank(message = "El título es obligatorio.")
-    @Size(max = 150, message = "El título no puede superar los 150 caracteres.")
+    @Size(max = 150)
     private String title;
 
-    @Size(max = 500, message = "La descripción no puede superar los 500 caracteres.")
+    @Size(max = 500)
     private String description;
 
     @NotBlank(message = "El tipo de actividad es obligatorio.")
     private String type;
 
-    @NotBlank(message = "El tema es obligatorio.")
-    private String topicId;
-
     @NotNull(message = "La duración es obligatoria.")
-    @Min(value = 1, message = "La duración debe ser mayor a 0 minutos.")
+    @Min(value = 1)
     private Integer durationMinutes;
 
     @NotNull(message = "El puntaje por pregunta es obligatorio.")
-    @Min(value = 1, message = "El puntaje debe ser mayor a 0.")
+    @Min(value = 1)
     private Integer scorePerQuestion;
 
-    public CreateActivityDto() {
-    }
 
-    public String getTitle() {
+    public CreateActivityDto(){}
+
+
+    public String getTitle(){
         return title;
     }
 
-    public String getDescription() {
+    public String getDescription(){
         return description;
     }
 
-    public String getType() {
+    public String getType(){
         return type;
     }
 
-    public String getTopicId() {
-        return topicId;
-    }
-
-    public Integer getDurationMinutes() {
+    public Integer getDurationMinutes(){
         return durationMinutes;
     }
 
-    public Integer getScorePerQuestion() {
+    public Integer getScorePerQuestion(){
         return scorePerQuestion;
     }
 }

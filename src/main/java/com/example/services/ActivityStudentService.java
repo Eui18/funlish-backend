@@ -39,7 +39,7 @@ public class ActivityStudentService {
             String studentId,
             String activityId) {
 
-        User student = authRepository.findById(studentId)
+        User student = authRepository.findByTuition(studentId)
                 .orElseThrow(() ->
                         new NotFoundException("El alumno no existe.")
                 );
@@ -112,16 +112,16 @@ public class ActivityStudentService {
     private ActivityStudentResponseDto toResponseDto(
             ActivityStudent activityStudent) {
 
-        return new ActivityStudentResponseDto(
-                activityStudent.getId(),
-                activityStudent.getActivityId(),
-                activityStudent.getStudentId(),
-                activityStudent.getStatus().name(),
-                activityStudent.getScore(),
-                activityStudent.getBonusPoints(),
-                activityStudent.getTimeSpent(),
-                activityStudent.getStartDate(),
-                activityStudent.getDeliveryDate()
+      return new ActivityStudentResponseDto(
+        activityStudent.getId(),
+        activityStudent.getActivityId(),
+        activityStudent.getStudentId(),
+        activityStudent.getStatus().name(),
+        activityStudent.getScore(),
+        activityStudent.getBonusPoints(),
+        activityStudent.getTimeSpent(),
+        activityStudent.getStartDate() != null ? activityStudent.getStartDate().toString() : null,
+        activityStudent.getDeliveryDate() != null ? activityStudent.getDeliveryDate().toString() : null
         );
     }
 }

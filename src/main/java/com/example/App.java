@@ -30,6 +30,7 @@ public class App {
             container.scrambleRoutes.register(app);
             container.activityStudentRoutes.register(app);
             container.studentGameRoutes.register(app);
+            container.profileRoutes.register(app);
 
             app.start(7000);
 

@@ -1,7 +1,6 @@
 package com.example.dtos.activityStudent;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 public class ActivityStudentResponseDto {
 
@@ -12,8 +11,8 @@ public class ActivityStudentResponseDto {
     private BigDecimal score;
     private BigDecimal bonusPoints;
     private Integer timeSpent;
-    private LocalDateTime startDate;
-    private LocalDateTime deliveryDate;
+    private String startDate;
+    private String deliveryDate;
 
     public ActivityStudentResponseDto(
             String id,
@@ -23,9 +22,9 @@ public class ActivityStudentResponseDto {
             BigDecimal score,
             BigDecimal bonusPoints,
             Integer timeSpent,
-            LocalDateTime startDate,
-            LocalDateTime deliveryDate
-    ){
+            String startDate,
+            String deliveryDate
+    ) {
 
         this.id = id;
         this.activityId = activityId;
@@ -38,39 +37,39 @@ public class ActivityStudentResponseDto {
         this.deliveryDate = deliveryDate;
     }
 
-    public String getId(){
+    public String getId() {
         return id;
     }
 
-    public String getActivityId(){
+    public String getActivityId() {
         return activityId;
     }
 
-    public String getStudentId(){
+    public String getStudentId() {
         return studentId;
     }
 
-    public String getStatus(){
+    public String getStatus() {
         return status;
     }
 
-    public BigDecimal getScore(){
+    public BigDecimal getScore() {
         return score;
     }
 
-    public BigDecimal getBonusPoints(){
+    public BigDecimal getBonusPoints() {
         return bonusPoints;
     }
 
-    public Integer getTimeSpent(){
+    public Integer getTimeSpent() {
         return timeSpent;
     }
 
-    public LocalDateTime getStartDate(){
+    public String getStartDate() {
         return startDate;
     }
 
-    public LocalDateTime getDeliveryDate(){
+    public String getDeliveryDate() {
         return deliveryDate;
     }
 }

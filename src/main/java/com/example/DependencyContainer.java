@@ -9,6 +9,7 @@ import com.example.controllers.ActivityController;
 import com.example.controllers.ActivityStudentController;
 import com.example.controllers.AuthController;
 import com.example.controllers.GroupController;
+import com.example.controllers.ProfileController;
 import com.example.controllers.ResourceController;
 import com.example.controllers.ScrambleController;
 import com.example.controllers.StudentController;
@@ -21,6 +22,7 @@ import com.example.repository.activityStudent.ActivityStudentRepositoryImpl;
 import com.example.repository.activityStudent.StudentGameRepositoryImpl;
 import com.example.repository.auth.AuthRepositoryImpl;
 import com.example.repository.group.GroupRepositoryImpl;
+import com.example.repository.profile.ProfileRepositoryImpl;
 import com.example.repository.resource.ResourceRepositoryImpl;
 import com.example.repository.scramble.ScrambleRepositoryImpl;
 import com.example.repository.student.StudentRepositoryImpl;
@@ -38,10 +40,12 @@ import com.example.routes.StudentRoutes;
 import com.example.routes.TopicRoutes;
 import com.example.routes.TriviaRoutes;
 import com.example.routes.UnitRoutes;
+import com.example.routes.ProfileRoutes;
 import com.example.services.ActivityService;
 import com.example.services.ActivityStudentService;
 import com.example.services.AuthService;
 import com.example.services.GroupService;
+import com.example.services.ProfileService;
 import com.example.services.StudentService;
 import com.example.services.TopicService;
 import com.example.services.TriviaService;
@@ -60,6 +64,7 @@ public class DependencyContainer {
     public final ScrambleRoutes scrambleRoutes;
     public final ActivityStudentRoutes activityStudentRoutes;
     public final StudentGameRoutes studentGameRoutes;
+    public final ProfileRoutes profileRoutes;
 
     public DependencyContainer(Connection connection) {
 
@@ -123,16 +128,18 @@ public class DependencyContainer {
         var activityStudentController = new ActivityStudentController(activityStudentService);
         this.activityStudentRoutes = new ActivityStudentRoutes(activityStudentController);
 
-        //student game
         // Student Game
         var studentGameRepository = new StudentGameRepositoryImpl(connection);
-        var studentGameService = new StudentGameService(
-                studentGameRepository,
-                activityStudentRepository,
-                activityRepository
-        );
+        var studentGameService = new StudentGameService(studentGameRepository,activityStudentRepository,activityRepository);
         var studentGameController = new StudentGameController(studentGameService);
         this.studentGameRoutes = new StudentGameRoutes(studentGameController);
-        }
+        
+
+        // Perfil y estadísticas
+        var profileRepository = new ProfileRepositoryImpl(connection);
+        var profileService = new ProfileService(profileRepository);
+        var profileController = new ProfileController(profileService);
+        this.profileRoutes = new ProfileRoutes(profileController);
+    }
 
 }

@@ -114,6 +114,64 @@ public class AuthRepositoryImpl implements AuthRepository {
     public Optional<User> findById(String id) {
 
         String sql = """
+                SELECT
+                    id,
+                    nombre AS name,
+                    matricula AS tuition,
+                    correo AS email,
+                    contrasena AS password,
+                    rol AS role,
+                    id_grupo AS groupId
+                FROM USUARIO
+                WHERE id = ?
+                """;
+
+
+        try (PreparedStatement statement =
+                connection.prepareStatement(sql)) {
+
+
+            statement.setString(1, id);
+
+
+            ResultSet resultSet =
+                    statement.executeQuery();
+
+
+            if (resultSet.next()) {
+
+                User user = new User(
+                        resultSet.getString("id"),
+                        resultSet.getString("name"),
+                        resultSet.getString("tuition"),
+                        resultSet.getString("email"),
+                        resultSet.getString("password"),
+                        Role.valueOf(resultSet.getString("role")),
+                        resultSet.getString("groupId")
+                );
+
+
+                return Optional.of(user);
+            }
+
+
+            return Optional.empty();
+
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(
+                "Error al buscar usuario por id: "
+                + e.getMessage(), e
+            );
+        }
+    }
+
+
+    @Override
+    public Optional<User> findByTuition(String tuition) {
+
+        String sql = """
                     SELECT
                         id,
                         nombre AS name,
@@ -123,12 +181,12 @@ public class AuthRepositoryImpl implements AuthRepository {
                         rol AS role,
                         id_grupo AS groupId
                     FROM USUARIO
-                    WHERE id = ?
+                    WHERE matricula = ?
                 """;
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(1, id);
+            statement.setString(1, tuition);
 
             ResultSet resultSet = statement.executeQuery();
 
@@ -149,8 +207,9 @@ public class AuthRepositoryImpl implements AuthRepository {
             return Optional.empty();
 
         } catch (Exception e) {
-            throw new RuntimeException("Error al buscar usuario por id: " + e.getMessage(), e);
+            throw new RuntimeException(
+                "Error al buscar usuario por matrícula: "
+                + e.getMessage(), e);
         }
     }
-
 }
