@@ -45,6 +45,7 @@ import com.example.services.ActivityService;
 import com.example.services.ActivityStudentService;
 import com.example.services.AuthService;
 import com.example.services.GroupService;
+import com.example.services.JwtService;
 import com.example.services.ProfileService;
 import com.example.services.StudentService;
 import com.example.services.TopicService;
@@ -70,7 +71,8 @@ public class DependencyContainer {
 
         // Módulo Auth
         var authRepository = new AuthRepositoryImpl(connection);
-        var authService = new AuthService(authRepository);
+        var jwtService = new JwtService();
+        var authService = new AuthService(authRepository, jwtService);
         var authController = new AuthController(authService);
         this.authRoutes = new AuthRoutes(authController);
 

@@ -8,6 +8,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import com.example.dtos.users.CreateUserDto;
 import com.example.dtos.users.LoginUserDto;
 import com.example.dtos.users.UserResponseDto;
+import com.example.dtos.users.LoginResponseDto;
 import com.example.exceptions.ResourceAlreadyExistsException;
 import com.example.exceptions.UnauthorizedException;
 import com.example.models.user.Role;
@@ -18,9 +19,12 @@ import com.example.exceptions.ValidationException;
 public class AuthService {
 
     private final AuthRepository repository;
+    private final JwtService jwtService;
 
-    public AuthService(AuthRepository repository) {
+
+    public AuthService(AuthRepository repository, JwtService jwtService) {
         this.repository = repository;
+        this.jwtService = jwtService;
     }
 
     public UserResponseDto registerUser(CreateUserDto dto) {
@@ -73,34 +77,32 @@ public class AuthService {
     }
 
 
-    public UserResponseDto findUser(LoginUserDto dto) {
-
+    public LoginResponseDto findUser(LoginUserDto dto) {
 
         User user = repository.findByTuition(dto.getTuition())
                 .orElseThrow(() ->
-                    new UnauthorizedException(
-                        "Usuario no encontrado."
-                    )
+                        new UnauthorizedException("Usuario no encontrado.")
                 );
 
-        // NUEVO: comparar contraseña ingresada con la cifrada en BD
-        if (!BCrypt.checkpw(
-                dto.getPassword(),
-                user.getPassword()
-        )) {
-
-            throw new UnauthorizedException(
-                    "Credenciales inválidas."
-            );
+        if (!BCrypt.checkpw(dto.getPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Credenciales inválidas.");
         }
 
-        return new UserResponseDto(
+        String token = jwtService.generateToken(
+                user.getId(),
+                user.getRole().name()
+        );
+
+        return new LoginResponseDto(
                 user.getId(),
                 user.getName(),
                 user.getTuition(),
                 user.getEmail(),
-                user.getRole());
+                user.getRole(),
+                token
+        );
     }
+
 
     private void validateStudent(CreateUserDto dto) {
 
