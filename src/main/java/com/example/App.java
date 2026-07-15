@@ -31,6 +31,7 @@ public class App {
             container.activityStudentRoutes.register(app);
             container.studentGameRoutes.register(app);
             container.profileRoutes.register(app);
+             container.forumRoutes.register(app);
 
             app.start(7000);
 

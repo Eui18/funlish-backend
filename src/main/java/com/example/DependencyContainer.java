@@ -8,6 +8,7 @@ import com.example.services.StudentGameService;
 import com.example.controllers.ActivityController;
 import com.example.controllers.ActivityStudentController;
 import com.example.controllers.AuthController;
+import com.example.controllers.ForumController;
 import com.example.controllers.GroupController;
 import com.example.controllers.ProfileController;
 import com.example.controllers.ResourceController;
@@ -21,6 +22,8 @@ import com.example.repository.activity.ActivityRepositoryImpl;
 import com.example.repository.activityStudent.ActivityStudentRepositoryImpl;
 import com.example.repository.activityStudent.StudentGameRepositoryImpl;
 import com.example.repository.auth.AuthRepositoryImpl;
+import com.example.repository.forum.CommentRepositoryImpl;
+import com.example.repository.forum.ForumRepositoryImpl;
 import com.example.repository.group.GroupRepositoryImpl;
 import com.example.repository.profile.ProfileRepositoryImpl;
 import com.example.repository.resource.ResourceRepositoryImpl;
@@ -32,6 +35,7 @@ import com.example.repository.unit.UnitRepositoryImpl;
 import com.example.routes.ActivityRoutes;
 import com.example.routes.ActivityStudentRoutes;
 import com.example.routes.AuthRoutes;
+import com.example.routes.ForumRoutes;
 import com.example.routes.GroupRoutes;
 import com.example.routes.ResourceRoutes;
 import com.example.routes.ScrambleRoutes;
@@ -44,6 +48,7 @@ import com.example.routes.ProfileRoutes;
 import com.example.services.ActivityService;
 import com.example.services.ActivityStudentService;
 import com.example.services.AuthService;
+import com.example.services.ForumService;
 import com.example.services.GroupService;
 import com.example.services.JwtService;
 import com.example.services.ProfileService;
@@ -66,6 +71,7 @@ public class DependencyContainer {
     public final ActivityStudentRoutes activityStudentRoutes;
     public final StudentGameRoutes studentGameRoutes;
     public final ProfileRoutes profileRoutes;
+    public final ForumRoutes forumRoutes;
 
     public DependencyContainer(Connection connection) {
 
@@ -142,6 +148,14 @@ public class DependencyContainer {
         var profileService = new ProfileService(profileRepository);
         var profileController = new ProfileController(profileService);
         this.profileRoutes = new ProfileRoutes(profileController);
+
+
+        // Foro
+        var forumRepository = new ForumRepositoryImpl(connection);
+        var commentRepository = new CommentRepositoryImpl(connection);
+        var forumService = new ForumService(forumRepository, commentRepository, groupRepository, authRepository);
+        var forumController = new ForumController(forumService);
+        this.forumRoutes = new ForumRoutes(forumController);
     }
 
 }

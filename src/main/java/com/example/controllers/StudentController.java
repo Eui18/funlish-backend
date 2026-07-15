@@ -24,6 +24,13 @@ public class StudentController {
         context.status(200).json(new MessageResponseDto("Alumno unido correctamente al grupo"));
     }
 
+    public void leaveGroup(Context context) {
+
+        String studentId = context.pathParam("studentId");
+        service.leaveGroup(studentId);
+        context.status(200).json(new MessageResponseDto("Alumno retirado correctamente del grupo"));
+    }
+
     public void findGroup(Context context) {
 
         String studentId = context.pathParam("studentId");

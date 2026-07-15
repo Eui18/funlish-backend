@@ -7,7 +7,9 @@ import java.util.List;
 
 import com.example.dtos.activityStudent.ActivityContentDto;
 import com.example.dtos.activityStudent.AnswerDto;
+import com.example.dtos.activityStudent.AnswerReviewDto;
 import com.example.dtos.activityStudent.ResultDto;
+import com.example.dtos.activityStudent.ReviewDto;
 import com.example.exceptions.NotFoundException;
 import com.example.exceptions.ValidationException;
 import com.example.models.activity.Activity;
@@ -121,64 +123,64 @@ public class StudentGameService {
 
     public ResultDto answerScramble(String activityStudentId, AnswerDto dto) {
 
-    ActivityStudent attempt = activityStudentRepository.findById(activityStudentId)
-            .orElseThrow(() ->
-                    new NotFoundException("Intento no encontrado.")
-            );
+        ActivityStudent attempt = activityStudentRepository.findById(activityStudentId)
+                .orElseThrow(() ->
+                        new NotFoundException("Intento no encontrado.")
+                );
 
-    if(!attempt.getLastQuestion().equals(dto.getNumber())) {
+        if(!attempt.getLastQuestion().equals(dto.getNumber())) {
 
-        throw new ValidationException(
-                List.of("El reto enviado no corresponde al progreso actual.")
+                throw new ValidationException(
+                        List.of("El reto enviado no corresponde al progreso actual.")
+                );
+        }
+
+        validateCompleted(attempt);
+
+        Activity activity = activityRepository.findById(attempt.getActivityId())
+                .orElseThrow(() ->
+                        new NotFoundException("Actividad no encontrada.")
+                );
+
+        String scrambleId = repository.findScrambleId( activity.getId(), dto.getNumber()
+        ).orElseThrow(() ->
+                new NotFoundException("Reto no encontrado.")
         );
-    }
 
-    validateCompleted(attempt);
+        String correctAnswer = repository.findCorrectScrambleAnswer(activity.getId(), dto.getNumber()
+                ).orElseThrow(() ->
+                        new NotFoundException( "Respuesta correcta no encontrada." )
+                );
 
-    Activity activity = activityRepository.findById(attempt.getActivityId())
-            .orElseThrow(() ->
-                    new NotFoundException("Actividad no encontrada.")
-            );
+        boolean correct = normalize(correctAnswer).equals(normalize(dto.getAnswer()));
 
-    String scrambleId = repository.findScrambleId( activity.getId(), dto.getNumber()
-    ).orElseThrow(() ->
-            new NotFoundException("Reto no encontrado.")
-    );
+        BigDecimal points = correct ? BigDecimal.valueOf(activity.getScorePerQuestion()) : BigDecimal.ZERO;
 
-    String correctAnswer = repository.findCorrectScrambleAnswer(activity.getId(), dto.getNumber()
-            ).orElseThrow(() ->
-                    new NotFoundException( "Respuesta correcta no encontrada." )
-            );
+        repository.saveAnswer(
+                activityStudentId,
+                null,
+                scrambleId,
+                dto.getNumber(),
+                dto.getAnswer(),
+                correct,
+                points
+        );
 
-    boolean correct = normalize(correctAnswer).equals(normalize(dto.getAnswer()));
+        attempt.setScore(attempt.getScore().add(points));
 
-    BigDecimal points = correct ? BigDecimal.valueOf(activity.getScorePerQuestion()) : BigDecimal.ZERO;
+        int totalChallenges = repository.countScrambleChallenges(activity.getId());
 
-    repository.saveAnswer(
-            activityStudentId,
-            null,
-            scrambleId,
-            dto.getNumber(),
-            dto.getAnswer(),
-            correct,
-            points
-    );
+        boolean finished = dto.getNumber() >= totalChallenges;
 
-    attempt.setScore(attempt.getScore().add(points));
+        updateProgress( attempt, finished, dto.getNumber() );
 
-    int totalChallenges = repository.countScrambleChallenges(activity.getId());
-
-    boolean finished = dto.getNumber() >= totalChallenges;
-
-    updateProgress( attempt, finished, dto.getNumber() );
-
-    return new ResultDto(
-correct,
-            points,
-            finished,
-            attempt.getLastQuestion()
-    );
-}
+        return new ResultDto(
+        correct,
+                points,
+                finished,
+                attempt.getLastQuestion()
+        );
+        }
 
 
     private void updateProgress(ActivityStudent attempt, boolean finished, Integer currentNumber) {
@@ -236,6 +238,51 @@ correct,
             throw new ValidationException(List.of("La actividad ya fue completada.")
             );
         }
+    }
+
+
+    public ReviewDto getReview(String activityStudentId) {
+
+        ActivityStudent attempt = activityStudentRepository.findById(activityStudentId)
+                .orElseThrow(() ->
+                        new NotFoundException("Intento no encontrado."));
+
+        if (attempt.getStatus() != ActivityStudentStatus.COMPLETADA) {
+            throw new ValidationException(
+                    List.of("La actividad aún no ha sido completada."));
+        }
+
+        Activity activity = activityRepository.findById(attempt.getActivityId())
+                .orElseThrow(() ->
+                        new NotFoundException("Actividad no encontrada."));
+
+        List<AnswerReviewDto> answers;
+        int totalItems;
+
+        if (activity.getType() == ActivityType.TRIVIA) {
+            answers = repository.findTriviaReview(activityStudentId);
+            totalItems = repository.countTriviaQuestions(activity.getId());
+        } else {
+            answers = repository.findScrambleReview(activityStudentId);
+            totalItems = repository.countScrambleChallenges(activity.getId());
+        }
+
+        BigDecimal totalScore = attempt.getScore().add(attempt.getBonusPoints());
+
+        int maxPossible = totalItems * activity.getScorePerQuestion();
+
+        double percentage = maxPossible > 0
+                ? attempt.getScore().doubleValue() / maxPossible * 100
+                : 0;
+
+        return new ReviewDto(
+                attempt.getScore(),
+                attempt.getBonusPoints(),
+                totalScore,
+                attempt.getTimeSpent(),
+                percentage,
+                answers
+        );
     }
 
 

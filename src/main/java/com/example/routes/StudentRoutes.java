@@ -15,5 +15,6 @@ public class StudentRoutes {
 
         app.post("/students/{studentId}/group", studentController::joinGroup);
         app.get("/students/{studentId}/group", studentController::findGroup);
+        app.delete("/students/{studentId}/group", studentController::leaveGroup);
     }
 }

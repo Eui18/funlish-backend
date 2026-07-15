@@ -8,5 +8,7 @@ public interface StudentRepository {
     Optional<User> findById(String id);
 
     boolean joinGroup(String studentId, String groupId);
+    
+    boolean leaveGroup(String studentId);
 
 }

@@ -72,6 +72,27 @@ public class StudentRepositoryImpl implements StudentRepository  {
         }
     }
 
+
+    @Override
+    public boolean leaveGroup(String studentId) {
+
+        String sql = """
+                UPDATE USUARIO
+                SET id_grupo = NULL
+                WHERE id = ? and rol = 'STUDENT'
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, studentId);
+
+            return statement.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al retirar al estudiante del grupo.", e);
+        }
+    }
+
     private User mapUser(ResultSet resultSet) throws SQLException {
 
         return new User(

@@ -44,6 +44,27 @@ public class StudentService {
         studentRepository.joinGroup(student.getId(), group.getId());
     }
 
+    public void leaveGroup(String studentId) {
+
+        User student = studentRepository.findById(studentId)
+                .orElseThrow(() ->
+                        new NotFoundException("Alumno no encontrado."));
+
+        if (student.getRole() != Role.STUDENT) {
+            throw new ValidationException(List.of("Solo los alumnos pertenecen a un grupo."));
+        }
+
+        if (student.getGroupId() == null) {
+            throw new ValidationException(List.of("El alumno no pertenece a ningún grupo."));
+        }
+
+        boolean removed = studentRepository.leaveGroup(studentId);
+
+        if (!removed) {
+            throw new NotFoundException("No se pudo retirar al alumno del grupo.");
+        }
+    }
+
     public GroupResponseDto findGroup(String studentId) {
 
         User student = studentRepository.findById(studentId)

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.example.dtos.activityStudent.ActivityContentDto;
+import com.example.dtos.activityStudent.AnswerReviewDto;
 
 public class StudentGameRepositoryImpl implements StudentGameRepository {
 
@@ -385,5 +386,90 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
             throw new RuntimeException(
                     "Error guardando respuesta: " + e.getMessage());
         }
+    }
+
+
+    @Override
+    public List<AnswerReviewDto> findTriviaReview(String activityStudentId) {
+
+        String sql = """
+                SELECT t.id AS triviaId, ra.numero AS number, t.enunciado AS statement,
+                       ra.respuesta AS studentAnswer, ra.correcta AS correct, o.opcion AS correctAnswer
+                FROM respuesta_alumno ra
+                INNER JOIN actividad_trivia t ON t.id = ra.id_trivia
+                INNER JOIN opcion o ON o.id_trivia = t.id
+                WHERE ra.id_actividad_alumno = ?
+                AND o.correcta = true
+                ORDER BY ra.numero
+                """;
+
+        List<AnswerReviewDto> reviews = new ArrayList<>();
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, activityStudentId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                String triviaId = rs.getString("triviaId");
+                List<String> options = findOptions(triviaId);
+
+                reviews.add(new AnswerReviewDto(
+                        rs.getInt("number"),
+                        rs.getString("statement"),
+                        options,
+                        rs.getString("correctAnswer"),
+                        rs.getString("studentAnswer"),
+                        rs.getBoolean("correct")
+                ));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error obteniendo revisión de trivia: " + e.getMessage());
+        }
+
+        return reviews;
+    }
+
+
+    @Override
+    public List<AnswerReviewDto> findScrambleReview(String activityStudentId) {
+
+        String sql = """
+                SELECT s.contenido_correcto AS correctAnswer, ra.numero AS number,
+                       ra.respuesta AS studentAnswer, ra.correcta AS correct
+                FROM respuesta_alumno ra
+                INNER JOIN actividad_scramble s ON s.id = ra.id_scramble
+                WHERE ra.id_actividad_alumno = ?
+                ORDER BY ra.numero
+                """;
+
+        List<AnswerReviewDto> reviews = new ArrayList<>();
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, activityStudentId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                reviews.add(new AnswerReviewDto(
+                        rs.getInt("number"),
+                        null,
+                        null,
+                        rs.getString("correctAnswer"),
+                        rs.getString("studentAnswer"),
+                        rs.getBoolean("correct")
+                ));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error obteniendo revisión de scramble: " + e.getMessage());
+        }
+
+        return reviews;
     }
 }

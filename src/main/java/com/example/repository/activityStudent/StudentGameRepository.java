@@ -1,9 +1,11 @@
 package com.example.repository.activityStudent;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import com.example.dtos.activityStudent.ActivityContentDto;
+import com.example.dtos.activityStudent.AnswerReviewDto;
 
 public interface StudentGameRepository {
 
@@ -32,4 +34,8 @@ public interface StudentGameRepository {
             boolean correct,
             BigDecimal points
     );
+
+    List<AnswerReviewDto> findTriviaReview(String activityStudentId);
+
+    List<AnswerReviewDto> findScrambleReview(String activityStudentId);
 }

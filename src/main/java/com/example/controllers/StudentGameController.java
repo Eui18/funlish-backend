@@ -51,4 +51,14 @@ public class StudentGameController {
                 service.answerScramble(activityStudentId, dto)
         );
     }
+
+
+    public void getReview(Context context) {
+
+        String activityStudentId = context.pathParam("activityStudentId");
+
+        context.json(
+                service.getReview(activityStudentId)
+        );
+    }
 }
