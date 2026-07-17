@@ -22,9 +22,10 @@ public class TopicController {
 
         CreateTopicDto dto = context.bodyAsClass(CreateTopicDto.class);
         DtoValidator.validate(dto); // CORRECCIÓN: Agregado
+        String teacherId = context.attribute("userId");
 
         context.status(201)
-                .json(topicService.create(unitId, dto));
+                .json(topicService.create(unitId, dto, teacherId));
     }
 
     // Obtener temas de una unidad

@@ -10,6 +10,9 @@ import com.example.exceptions.ResourceAlreadyExistsException; // Importada
 import com.example.exceptions.ValidationException;
 import com.example.models.resource.Resource;
 import com.example.models.resource.ResourceType;
+import com.example.models.user.Role;
+import com.example.models.user.User;
+import com.example.repository.auth.AuthRepository;
 import com.example.repository.resource.ResourceRepository;
 import com.example.repository.topic.TopicRepository;
 
@@ -17,13 +20,23 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final TopicRepository topicRepository;
+    private final AuthRepository authRepository;
 
-    public ResourceService(ResourceRepository resourceRepository, TopicRepository topicRepository) {
+    public ResourceService(ResourceRepository resourceRepository, TopicRepository topicRepository, AuthRepository authRepository) {
         this.resourceRepository = resourceRepository;
         this.topicRepository = topicRepository;
+        this.authRepository = authRepository;
     }
 
-    public ResourceResponseDto create(String topicId, CreateResourceDto dto) {
+    public ResourceResponseDto create(String topicId, CreateResourceDto dto, String teacherId) {
+
+        User teacher = authRepository.findById(teacherId)
+                .orElseThrow(() -> new NotFoundException("El docente no existe."));
+
+        if (teacher.getRole() != Role.TEACHER) {
+            throw new ValidationException(List.of("Solo un docente puede crear materiales."));
+        }
+
         if (topicRepository.findById(topicId).isEmpty()) {
             throw new NotFoundException("Tema no encontrado.");
         }

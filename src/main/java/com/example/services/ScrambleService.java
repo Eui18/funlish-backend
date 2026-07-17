@@ -14,27 +14,41 @@ import com.example.models.activity.ActivityType;
 import com.example.models.activity.ActivityStatus;
 import com.example.models.scramble.Scramble;
 import com.example.models.scramble.ScrambleType;
+import com.example.models.user.Role;
+import com.example.models.user.User;
 import com.example.repository.activity.ActivityRepository;
+import com.example.repository.auth.AuthRepository;
 import com.example.repository.scramble.ScrambleRepository;
 
 public class ScrambleService {
 
     private final ScrambleRepository repository;
     private final ActivityRepository activityRepository;
+    private final AuthRepository authRepository;
 
     public ScrambleService(
             ScrambleRepository repository,
-            ActivityRepository activityRepository
+            ActivityRepository activityRepository,
+            AuthRepository authRepository
     ) {
         this.repository = repository;
         this.activityRepository = activityRepository;
+        this.authRepository = authRepository;
     }
 
 
     public ScrambleResponseDto create(
             String activityId,
-            CreateScrambleDto dto
+            CreateScrambleDto dto,
+            String teacherId
     ) {
+
+        User teacher = authRepository.findById(teacherId)
+                .orElseThrow(() -> new NotFoundException("El docente no existe."));
+
+        if (teacher.getRole() != Role.TEACHER) {
+            throw new ValidationException(List.of("Solo un docente puede crear retos."));
+        }
 
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() ->

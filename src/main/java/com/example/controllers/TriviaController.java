@@ -19,8 +19,9 @@ public class TriviaController {
     public void create(Context context) {
 
         CreateTriviaDto dto = context.bodyAsClass(CreateTriviaDto.class);
+        String teacherId = context.attribute("userId");
 
-        triviaService.create(context.pathParam("activityId"), dto);
+        triviaService.create(context.pathParam("activityId"), dto, teacherId);
 
         context.status(201).json(Map.of("message", "Pregunta creada correctamente."));
     }

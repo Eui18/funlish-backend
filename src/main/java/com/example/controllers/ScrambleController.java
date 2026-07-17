@@ -18,8 +18,9 @@ public class ScrambleController {
         String activityId = context.pathParam("activityId");
 
         CreateScrambleDto dto = context.bodyAsClass(CreateScrambleDto.class);
+        String teacherId = context.attribute("userId");
 
-        context.status(201).json(service.create(activityId, dto));
+        context.status(201).json(service.create(activityId, dto, teacherId));
     }
 
 

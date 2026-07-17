@@ -14,7 +14,10 @@ import com.example.models.activity.ActivityStatus;
 import com.example.models.activity.ActivityType;
 import com.example.models.trivia.Option;
 import com.example.models.trivia.TriviaQuestion;
+import com.example.models.user.Role;
+import com.example.models.user.User;
 import com.example.repository.activity.ActivityRepository;
+import com.example.repository.auth.AuthRepository;
 import com.example.repository.trivia.TriviaRepository;
 import com.example.utils.DtoValidator;
 
@@ -22,17 +25,27 @@ public class TriviaService {
 
     private final TriviaRepository triviaRepository;
     private final ActivityRepository activityRepository;
+    private final AuthRepository authRepository;
 
     public TriviaService(
             TriviaRepository triviaRepository,
-            ActivityRepository activityRepository
+            ActivityRepository activityRepository,
+            AuthRepository authRepository
     ) {
         this.triviaRepository = triviaRepository;
         this.activityRepository = activityRepository;
+        this.authRepository = authRepository;
     }
 
 
-    public void create(String activityId, CreateTriviaDto dto) {
+    public void create(String activityId, CreateTriviaDto dto, String teacherId) {
+
+        User teacher = authRepository.findById(teacherId)
+                .orElseThrow(() -> new NotFoundException("El docente no existe."));
+
+        if (teacher.getRole() != Role.TEACHER) {
+            throw new ValidationException(List.of("Solo un docente puede crear preguntas."));
+        }
 
         DtoValidator.validate(dto);
 

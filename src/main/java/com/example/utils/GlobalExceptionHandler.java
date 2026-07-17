@@ -39,6 +39,13 @@ public class GlobalExceptionHandler {
                     "message", e.getMessage()));
         });
 
+        // 400 - ILLEGAL ARGUMENT (validaciones de negocio que no usan ValidationException)
+        app.exception(IllegalArgumentException.class, (e, ctx) -> {
+            ctx.status(400).json(Map.of(
+                    "success", false,
+                    "message", e.getMessage()));
+        });
+
         // 500 - GENERAL
         app.exception(Exception.class, (e, ctx) -> {
             e.printStackTrace();

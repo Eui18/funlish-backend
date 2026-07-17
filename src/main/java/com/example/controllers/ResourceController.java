@@ -22,9 +22,10 @@ public class ResourceController {
         CreateResourceDto dto = context.bodyAsClass(CreateResourceDto.class);
 
         DtoValidator.validate(dto);
+        String teacherId = context.attribute("userId");
 
         context.status(201).json(
-                resourceService.create(topicId, dto)
+                resourceService.create(topicId, dto, teacherId)
         );
     }
 

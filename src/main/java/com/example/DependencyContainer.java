@@ -99,19 +99,19 @@ public class DependencyContainer {
 
         //unit
         var unitRepository = new UnitRepositoryImpl(connection);
-        var unitService = new UnitService(unitRepository, groupRepository);
+        var unitService = new UnitService(unitRepository, groupRepository, authRepository);
         var unitController = new UnitController (unitService);
         this.unitRoutes = new UnitRoutes(unitController);
 
         // Topic
         var topicRepository = new TopicRepositoryImpl(connection);
-        var topicService = new TopicService(topicRepository, unitRepository);
+        var topicService = new TopicService(topicRepository, unitRepository, authRepository);
         var topicController = new TopicController(topicService);
         this.topicRoutes = new TopicRoutes(topicController);
 
         // Resource
         var resourceRepository = new ResourceRepositoryImpl(connection);
-        var resourceService = new ResourceService(resourceRepository, topicRepository);
+        var resourceService = new ResourceService(resourceRepository, topicRepository, authRepository);
         var resourceController = new ResourceController(resourceService);
         this.resourceRoutes = new ResourceRoutes(resourceController);
 
@@ -125,12 +125,12 @@ public class DependencyContainer {
         this.activityRoutes = new ActivityRoutes(activityController);
 
         //trivia
-        var triviaService = new TriviaService(triviaRepository, activityRepository);
+        var triviaService = new TriviaService(triviaRepository, activityRepository, authRepository);
         var triviaController = new TriviaController(triviaService);
         this.triviaRoutes = new TriviaRoutes(triviaController);
 
         //scramble
-        var scrambleService = new ScrambleService(scrambleRepository, activityRepository);
+        var scrambleService = new ScrambleService(scrambleRepository, activityRepository, authRepository);
         var scrambleController = new ScrambleController(scrambleService);
         this.scrambleRoutes = new ScrambleRoutes(scrambleController);
 

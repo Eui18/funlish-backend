@@ -35,8 +35,9 @@ public class UnitController {
         String groupId = context.pathParam("groupId");
         CreateUnitDto dto = context.bodyAsClass(CreateUnitDto.class);
         DtoValidator.validate(dto);
+        String teacherId = context.attribute("userId");
 
-        var response = unitService.create(groupId, dto);
+        var response = unitService.create(groupId, dto, teacherId);
         context.status(201).json(response);
     }
 

@@ -13,6 +13,9 @@ import com.example.exceptions.ResourceAlreadyExistsException;
 import com.example.exceptions.ValidationException;
 import com.example.models.group.Group;
 import com.example.models.unit.Unit;
+import com.example.models.user.Role;
+import com.example.models.user.User;
+import com.example.repository.auth.AuthRepository;
 import com.example.repository.group.GroupRepository;
 import com.example.repository.unit.UnitRepository;
 
@@ -20,10 +23,12 @@ public class UnitService {
 
     private final UnitRepository repository;
     private final GroupRepository groupRepository;
+    private final AuthRepository authRepository;
 
-    public UnitService(UnitRepository repository, GroupRepository groupRepository) {
+    public UnitService(UnitRepository repository, GroupRepository groupRepository, AuthRepository authRepository) {
         this.repository = repository;
         this.groupRepository = groupRepository;
+        this.authRepository = authRepository;
     }
 
     public List<UnitResponseDto> findAll(String groupId) {
@@ -47,7 +52,14 @@ public class UnitService {
         return toResponseDto(unit);
     }
 
-    public UnitResponseDto create(String groupId, CreateUnitDto dto) {
+    public UnitResponseDto create(String groupId, CreateUnitDto dto, String teacherId) {
+        User teacher = authRepository.findById(teacherId)
+                .orElseThrow(() -> new NotFoundException("El docente no existe."));
+
+        if (teacher.getRole() != Role.TEACHER) {
+            throw new ValidationException(List.of("Solo un docente puede crear unidades."));
+        }
+
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
 

@@ -10,6 +10,9 @@ import com.example.dtos.topic.UpdateTopicDto;
 import com.example.exceptions.NotFoundException;
 import com.example.exceptions.ValidationException;
 import com.example.models.topic.Topic;
+import com.example.models.user.Role;
+import com.example.models.user.User;
+import com.example.repository.auth.AuthRepository;
 import com.example.repository.topic.TopicRepository;
 import com.example.repository.unit.UnitRepository;
 
@@ -17,13 +20,22 @@ public class TopicService {
 
     private final TopicRepository repository;
     private final UnitRepository unitRepository;
+    private final AuthRepository authRepository;
 
-    public TopicService(TopicRepository repository, UnitRepository unitRepository) {
+    public TopicService(TopicRepository repository, UnitRepository unitRepository, AuthRepository authRepository) {
         this.repository = repository;
         this.unitRepository = unitRepository;
+        this.authRepository = authRepository;
     }
 
-    public TopicResponseDto create(String unitId, CreateTopicDto dto) {
+    public TopicResponseDto create(String unitId, CreateTopicDto dto, String teacherId) {
+
+        User teacher = authRepository.findById(teacherId)
+                .orElseThrow(() -> new NotFoundException("El docente no existe."));
+
+        if (teacher.getRole() != Role.TEACHER) {
+            throw new ValidationException(List.of("Solo un docente puede crear temas."));
+        }
 
         String title = dto.getTitle().trim();
 

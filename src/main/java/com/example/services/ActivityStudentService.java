@@ -39,7 +39,7 @@ public class ActivityStudentService {
             String studentId,
             String activityId) {
 
-        User student = authRepository.findByTuition(studentId)
+        User student = authRepository.findById(studentId)
                 .orElseThrow(() ->
                         new NotFoundException("El alumno no existe.")
                 );
