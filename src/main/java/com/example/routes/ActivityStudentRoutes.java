@@ -19,15 +19,9 @@ public class ActivityStudentRoutes {
     public void register(Javalin app) {
 
 
-        app.post(
-                "/students/{studentId}/activities/{activityId}/start",
-                controller::start
-        );
+        app.post("/activities/{activityId}/start", controller::start);
 
 
-        app.get(
-                "/students/{studentId}/activities/{activityId}",
-                controller::findAttempt
-        );
+        app.get("/activities/{activityId}/attempt", controller::findAttempt);
     }
 }

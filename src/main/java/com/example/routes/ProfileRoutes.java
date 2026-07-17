@@ -1,7 +1,6 @@
 package com.example.routes;
 
 import com.example.controllers.ProfileController;
-
 import io.javalin.Javalin;
 
 public class ProfileRoutes {
@@ -12,20 +11,12 @@ public class ProfileRoutes {
         this.controller = controller;
     }
 
-
     public void register(Javalin app) {
 
         // Perfil completo del alumno
-        app.get(
-            "/profiles/student/{studentId}",
-            controller::getStudentProfile
-        );
-
+        app.get("/profiles/student", controller::getStudentProfile);
 
         // Dashboard completo del docente
-        app.get(
-            "/profiles/teacher/{teacherId}",
-            controller::getTeacherDashboard
-        );
+        app.get("/profiles/teacher", controller::getTeacherDashboard);
     }
 }

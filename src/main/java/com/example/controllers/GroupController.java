@@ -23,13 +23,14 @@ public class GroupController {
 
         CreateGroupDto dto = context.bodyAsClass(CreateGroupDto.class);
         DtoValidator.validate(dto);
-        var response = groupService.create(dto);
+        String teacherId = context.attribute("userId");
+        var response = groupService.create(dto, teacherId);
         context.status(201).json(response);
     }
 
     public void findAll(Context context) {
 
-        String teacherId = context.pathParam("teacherId");
+        String teacherId = context.attribute("userId");
         var response = groupService.findAll(teacherId);
         context.json(response);
     }

@@ -5,6 +5,7 @@ import io.javalin.http.Context;
 import java.util.Map;
 
 import com.example.dtos.activity.CreateActivityDto;
+import com.example.dtos.activity.DuplicateActivityDto;
 import com.example.dtos.activity.UpdateActivityDto;
 import com.example.services.ActivityService;
 
@@ -20,13 +21,26 @@ public class ActivityController {
 
         CreateActivityDto dto = context.bodyAsClass(CreateActivityDto.class);
 
-        String teacherId = context.pathParam("teacherId");
+        String teacherId = context.attribute("userId");
         String topicId = context.pathParam("topicId");
 
         activityService.create(dto, teacherId, topicId);
 
         context.status(201).json(Map.of(
                 "message", "Actividad creada correctamente."));
+    }
+
+
+    public void duplicate(Context context) {
+
+        DuplicateActivityDto dto = context.bodyAsClass(DuplicateActivityDto.class);
+
+        String teacherId = context.attribute("userId");
+        String activityId = context.pathParam("id");
+
+        var response = activityService.duplicate(activityId, dto, teacherId);
+
+        context.status(201).json(response);
     }
 
 

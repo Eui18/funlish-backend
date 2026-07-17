@@ -12,21 +12,17 @@ public class ProfileController {
     }
 
     // PERFIL ALUMNO
-
     public void getStudentProfile(Context context) {
 
-        String studentId = context.pathParam("studentId");
-
+        String studentId = context.attribute("userId");
         context.json(service.getStudentProfile(studentId)
         );
     }
 
     // DASHBOARD DOCENTE
-
     public void getTeacherDashboard(Context context) {
 
-        String teacherId = context.pathParam("teacherId");
-
+        String teacherId = context.attribute("userId");
         context.json(service.getTeacherDashboard(teacherId));
     }
 }

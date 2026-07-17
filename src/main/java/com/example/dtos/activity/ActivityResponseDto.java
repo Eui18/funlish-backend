@@ -11,6 +11,12 @@ public class ActivityResponseDto {
     private Integer scorePerQuestion;
     private String status;
 
+    private String startDate;
+    private String endDate;
+    private String startTime;
+    private String endTime;
+
+
     public ActivityResponseDto(
             String id,
             String topicId,
@@ -19,7 +25,11 @@ public class ActivityResponseDto {
             String type,
             Integer durationMinutes,
             Integer scorePerQuestion,
-            String status) {
+            String status,
+            String startDate,
+            String endDate,
+            String startTime,
+            String endTime) {
 
         this.id = id;
         this.topicId = topicId;
@@ -29,7 +39,13 @@ public class ActivityResponseDto {
         this.durationMinutes = durationMinutes;
         this.scorePerQuestion = scorePerQuestion;
         this.status = status;
+
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
+
 
     public String getId() {
         return id;
@@ -61,5 +77,21 @@ public class ActivityResponseDto {
 
     public String getStatus() {
         return status;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
     }
 }

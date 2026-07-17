@@ -6,7 +6,6 @@ public class ForumResponseDto {
 
     private String id;
     private String groupId;
-    private String teacherId;
     private String title;
     private String description;
     private String url;
@@ -16,7 +15,6 @@ public class ForumResponseDto {
     public ForumResponseDto(
             String id,
             String groupId,
-            String teacherId,
             String title,
             String description,
             String url,
@@ -25,7 +23,6 @@ public class ForumResponseDto {
 
         this.id = id;
         this.groupId = groupId;
-        this.teacherId = teacherId;
         this.title = title;
         this.description = description;
         this.url = url;
@@ -39,10 +36,6 @@ public class ForumResponseDto {
 
     public String getGroupId() {
         return groupId;
-    }
-
-    public String getTeacherId() {
-        return teacherId;
     }
 
     public String getTitle() {

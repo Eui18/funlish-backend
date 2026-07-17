@@ -8,7 +8,7 @@ public class UpdateActivityDto {
     @Size(max = 150, message = "El título no puede superar los 150 caracteres.")
     private String title;
 
-    @Size(max =500, message = "La descripción no puede superar los 500 caracteres.")
+    @Size(max = 500, message = "La descripción no puede superar los 500 caracteres.")
     private String description;
 
     private String type;
@@ -19,8 +19,19 @@ public class UpdateActivityDto {
     @Min(value = 1, message = "El puntaje debe ser mayor a 0.")
     private Integer scorePerQuestion;
 
+
+    private String startDate;
+
+    private String endDate;
+
+    private String startTime;
+
+    private String endTime;
+
+
     public UpdateActivityDto() {
     }
+
 
     public String getTitle() {
         return title;
@@ -40,5 +51,22 @@ public class UpdateActivityDto {
 
     public Integer getScorePerQuestion() {
         return scorePerQuestion;
+    }
+
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
     }
 }

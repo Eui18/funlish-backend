@@ -72,12 +72,15 @@ public class DependencyContainer {
     public final StudentGameRoutes studentGameRoutes;
     public final ProfileRoutes profileRoutes;
     public final ForumRoutes forumRoutes;
+    public final JwtService jwtService;
+    public final ActivityService activityService;
 
     public DependencyContainer(Connection connection) {
 
         // Módulo Auth
         var authRepository = new AuthRepositoryImpl(connection);
-        var jwtService = new JwtService();
+        this.jwtService = new JwtService();
+        var jwtService = this.jwtService;
         var authService = new AuthService(authRepository, jwtService);
         var authController = new AuthController(authService);
         this.authRoutes = new AuthRoutes(authController);
@@ -114,18 +117,19 @@ public class DependencyContainer {
 
         //activity
         var activityRepository = new ActivityRepositoryImpl(connection);
-        var activityService = new ActivityService(activityRepository, topicRepository);
+        var triviaRepository = new TriviaRepositoryImpl(connection);
+        var scrambleRepository = new ScrambleRepositoryImpl(connection);
+        this.activityService = new ActivityService(activityRepository, topicRepository, unitRepository, authRepository, triviaRepository, scrambleRepository);
+        var activityService = this.activityService;
         var activityController = new ActivityController(activityService);
         this.activityRoutes = new ActivityRoutes(activityController);
 
         //trivia
-        var triviaRepository = new TriviaRepositoryImpl(connection);
         var triviaService = new TriviaService(triviaRepository, activityRepository);
         var triviaController = new TriviaController(triviaService);
         this.triviaRoutes = new TriviaRoutes(triviaController);
 
         //scramble
-        var scrambleRepository = new ScrambleRepositoryImpl(connection);
         var scrambleService = new ScrambleService(scrambleRepository, activityRepository);
         var scrambleController = new ScrambleController(scrambleService);
         this.scrambleRoutes = new ScrambleRoutes(scrambleController);
@@ -148,7 +152,6 @@ public class DependencyContainer {
         var profileService = new ProfileService(profileRepository);
         var profileController = new ProfileController(profileService);
         this.profileRoutes = new ProfileRoutes(profileController);
-
 
         // Foro
         var forumRepository = new ForumRepositoryImpl(connection);

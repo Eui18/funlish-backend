@@ -13,5 +13,7 @@ public interface ForumRepository {
 
     Forum create(Forum forum);
 
+    boolean update(Forum forum);
+
     boolean delete(String id);
 }

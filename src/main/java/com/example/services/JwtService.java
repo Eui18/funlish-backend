@@ -4,7 +4,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
+import com.example.exceptions.UnauthorizedException;
+import com.example.utils.AuthenticatedUser;
+
 import io.github.cdimascio.dotenv.Dotenv;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -27,5 +31,25 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(SECRET_KEY)
                 .compact();
+    }
+
+    public AuthenticatedUser validateToken(String token) {
+
+        try {
+
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String userId = claims.getSubject();
+            String role = claims.get("role", String.class);
+
+            return new AuthenticatedUser(userId, role);
+
+        } catch (Exception e) {
+            throw new UnauthorizedException("Token inválido o expirado.");
+        }
     }
 }

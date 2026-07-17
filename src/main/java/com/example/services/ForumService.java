@@ -9,10 +9,12 @@ import com.example.dtos.forum.CommentResponseDto;
 import com.example.dtos.forum.CreateCommentDto;
 import com.example.dtos.forum.CreateForumDto;
 import com.example.dtos.forum.ForumResponseDto;
+import com.example.dtos.forum.UpdateForumDto;
 import com.example.exceptions.NotFoundException;
 import com.example.exceptions.ValidationException;
 import com.example.models.forum.Comment;
 import com.example.models.forum.Forum;
+import com.example.models.group.Group;
 import com.example.models.user.Role;
 import com.example.models.user.User;
 import com.example.repository.auth.AuthRepository;
@@ -66,12 +68,12 @@ public class ForumService {
     }
 
 
-    public ForumResponseDto create(String groupId, CreateForumDto dto) {
+    public ForumResponseDto create(String groupId, CreateForumDto dto, String teacherId) {
 
         groupRepository.findById(groupId)
                 .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
 
-        User teacher = authRepository.findById(dto.getTeacherId())
+        User teacher = authRepository.findById(teacherId)
                 .orElseThrow(() -> new NotFoundException("El docente no existe."));
 
         if (teacher.getRole() != Role.TEACHER) {
@@ -81,7 +83,6 @@ public class ForumService {
         Forum forum = new Forum(
                 UUID.randomUUID().toString(),
                 groupId,
-                dto.getTeacherId(),
                 dto.getTitle(),
                 dto.getDescription(),
                 dto.getUrl(),
@@ -89,6 +90,55 @@ public class ForumService {
         );
 
         repository.create(forum);
+
+        return toResponseDto(forum);
+    }
+
+
+    public ForumResponseDto update(String id, UpdateForumDto dto, String teacherId) {
+
+        Forum forum = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Publicación no encontrada."));
+
+        User teacher = authRepository.findById(teacherId)
+                .orElseThrow(() -> new NotFoundException("El docente no existe."));
+
+        if (teacher.getRole() != Role.TEACHER) {
+            throw new ValidationException(List.of("Solo un docente puede editar publicaciones."));
+        }
+
+        Group group = groupRepository.findById(forum.getGroupId())
+                .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
+
+        if (!group.getTeacherId().equals(teacherId)) {
+            throw new ValidationException(List.of("Solo el docente propietario del foro puede editar esta publicación."));
+        }
+
+        if (dto.getTitle() != null) {
+
+            if (dto.getTitle().isBlank()) {
+                throw new ValidationException(List.of("El título no puede estar vacío."));
+            }
+            forum.setTitle(dto.getTitle());
+        }
+
+        if (dto.getDescription() != null) {
+
+            if (dto.getDescription().isBlank()) {
+                throw new ValidationException(List.of("La descripción no puede estar vacía."));
+            }
+            forum.setDescription(dto.getDescription());
+        }
+
+        if (dto.getUrl() != null) {
+            forum.setUrl(dto.getUrl());
+        }
+
+        boolean updated = repository.update(forum);
+
+        if (!updated) {
+            throw new NotFoundException("No se pudo actualizar la publicación.");
+        }
 
         return toResponseDto(forum);
     }
@@ -114,18 +164,18 @@ public class ForumService {
     }
 
 
-    public CommentResponseDto addComment(String forumId, CreateCommentDto dto) {
+    public CommentResponseDto addComment(String forumId, CreateCommentDto dto, String userId) {
 
         repository.findById(forumId)
                 .orElseThrow(() -> new NotFoundException("Publicación no encontrada."));
 
-        User user = authRepository.findById(dto.getUserId())
+        User user = authRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("El usuario no existe."));
 
         Comment comment = new Comment(
                 UUID.randomUUID().toString(),
                 forumId,
-                dto.getUserId(),
+                userId,
                 dto.getComment(),
                 LocalDateTime.now()
         );
@@ -185,7 +235,6 @@ public class ForumService {
         return new ForumResponseDto(
                 forum.getId(),
                 forum.getGroupId(),
-                forum.getTeacherId(),
                 forum.getTitle(),
                 forum.getDescription(),
                 forum.getUrl(),

@@ -26,22 +26,17 @@ public class CreateGroupDto {
     )
     private String group;
 
-    @NotBlank(message = "El docente es obligatorio")
-    private String teacherId;
-    
     public CreateGroupDto(){
     }
 
     public CreateGroupDto(
             String name,
             Integer semester,
-            String group,
-            String teacherId) {
+            String group) {
 
         this.name = name;
         this.semester = semester;
         this.group = group;
-        this.teacherId = teacherId;
     }
 
     public String getName(){
@@ -66,13 +61,5 @@ public class CreateGroupDto {
 
     public void setGroup(String group) {
         this.group = group;
-    }
-
-    public String getTeacherId (){
-        return this.teacherId;
-    }
-
-    public void setTeacherId(String teacherId) {
-        this.teacherId = teacherId;
     }
 }

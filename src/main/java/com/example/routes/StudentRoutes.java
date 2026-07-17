@@ -13,8 +13,8 @@ public class StudentRoutes {
 
     public void register(Javalin app) {
 
-        app.post("/students/{studentId}/group", studentController::joinGroup);
-        app.get("/students/{studentId}/group", studentController::findGroup);
-        app.delete("/students/{studentId}/group", studentController::leaveGroup);
+        app.post("/students/group", studentController::joinGroup);
+        app.get("/students/group", studentController::findGroup);
+        app.delete("/students/group", studentController::leaveGroup);
     }
 }

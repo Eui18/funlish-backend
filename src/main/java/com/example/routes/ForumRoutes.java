@@ -23,13 +23,16 @@ public class ForumRoutes {
         // Docente / Alumno - ver una publicación con sus comentarios
         app.get("/forums/{id}", controller::findById);
 
+        // Docente - editar publicación (título, descripción, url)
+        app.patch("/forums/{id}", controller::update);
+
         // Docente - eliminar publicación
-        app.delete("/forums/{id}/teachers/{teacherId}", controller::delete);
+        app.delete("/forums/{id}", controller::delete);
 
         // Docente / Alumno - comentar
         app.post("/forums/{forumId}/comments", controller::addComment);
 
         // Docente - eliminar comentario
-        app.delete("/comments/{commentId}/users/{requesterId}", controller::deleteComment);
+        app.delete("/comments/{commentId}", controller::deleteComment);
     }
 }

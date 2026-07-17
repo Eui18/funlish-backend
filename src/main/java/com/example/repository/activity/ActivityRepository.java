@@ -13,6 +13,10 @@ public interface ActivityRepository {
 
     void publish(String activityId);
 
+    void finish(String activityId);
+
+    List<Activity> findExpiredPublished();
+
     void delete(String id);
 
     Optional<Activity> findById(String id);

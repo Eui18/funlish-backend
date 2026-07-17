@@ -12,9 +12,6 @@ public class CreateCommentDto {
     @Size(max = 1000, message = "El comentario no puede superar los 1000 caracteres.")
     private String comment;
 
-    @NotBlank(message = "El usuario es obligatorio.")
-    private String userId;
-
     public CreateCommentDto() {
     }
 
@@ -24,13 +21,5 @@ public class CreateCommentDto {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
     }
 }

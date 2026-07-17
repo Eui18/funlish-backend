@@ -23,7 +23,7 @@ public class ForumRepositoryImpl implements ForumRepository {
     public List<Forum> findAll(String groupId) {
 
         String sql = """
-                SELECT id, id_grupo AS groupId, id_docente AS teacherId,
+                SELECT id, id_grupo AS groupId,
                        titulo AS title, descripcion AS description, url, created_at AS createdAt
                 FROM foro
                 WHERE id_grupo = ?
@@ -54,7 +54,7 @@ public class ForumRepositoryImpl implements ForumRepository {
     public Optional<Forum> findById(String id) {
 
         String sql = """
-                SELECT id, id_grupo AS groupId, id_docente AS teacherId,
+                SELECT id, id_grupo AS groupId,
                        titulo AS title, descripcion AS description, url, created_at AS createdAt
                 FROM foro
                 WHERE id = ?
@@ -82,18 +82,17 @@ public class ForumRepositoryImpl implements ForumRepository {
     public Forum create(Forum forum) {
 
         String sql = """
-                INSERT INTO foro(id, id_grupo, id_docente, titulo, descripcion, url)
-                VALUES(?,?,?,?,?,?)
+                INSERT INTO foro(id, id_grupo, titulo, descripcion, url)
+                VALUES(?,?,?,?,?)
                 """;
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, forum.getId());
             statement.setString(2, forum.getGroupId());
-            statement.setString(3, forum.getTeacherId());
-            statement.setString(4, forum.getTitle());
-            statement.setString(5, forum.getDescription());
-            statement.setString(6, forum.getUrl());
+            statement.setString(3, forum.getTitle());
+            statement.setString(4, forum.getDescription());
+            statement.setString(5, forum.getUrl());
 
             statement.executeUpdate();
 
@@ -101,6 +100,29 @@ public class ForumRepositoryImpl implements ForumRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error al crear la publicación.", e);
+        }
+    }
+
+    @Override
+    public boolean update(Forum forum) {
+
+        String sql = """
+                UPDATE foro
+                SET titulo = ?, descripcion = ?, url = ?
+                WHERE id = ?
+                """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, forum.getTitle());
+            statement.setString(2, forum.getDescription());
+            statement.setString(3, forum.getUrl());
+            statement.setString(4, forum.getId());
+
+            return statement.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar la publicación.", e);
         }
     }
 
@@ -127,7 +149,6 @@ public class ForumRepositoryImpl implements ForumRepository {
         return new Forum(
                 resultSet.getString("id"),
                 resultSet.getString("groupId"),
-                resultSet.getString("teacherId"),
                 resultSet.getString("title"),
                 resultSet.getString("description"),
                 resultSet.getString("url"),

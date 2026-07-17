@@ -2,23 +2,20 @@ package com.example.dtos.forum;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CreateForumDto {
+public class UpdateForumDto {
 
-    @NotBlank(message = "El título es obligatorio.")
     @Size(min = 3, max = 150, message = "El título debe tener entre 3 y 150 caracteres.")
     private String title;
 
-    @NotBlank(message = "La descripción es obligatoria.")
     private String description;
 
     @Size(max = 500, message = "El enlace no puede superar los 500 caracteres.")
     private String url;
 
-    public CreateForumDto() {
+    public UpdateForumDto() {
     }
 
     public String getTitle() {

@@ -6,7 +6,6 @@ public class Forum {
 
     private String id;
     private String groupId;
-    private String teacherId;
     private String title;
     private String description;
     private String url;
@@ -18,7 +17,6 @@ public class Forum {
     public Forum(
             String id,
             String groupId,
-            String teacherId,
             String title,
             String description,
             String url,
@@ -26,7 +24,6 @@ public class Forum {
 
         this.id = id;
         this.groupId = groupId;
-        this.teacherId = teacherId;
         this.title = title;
         this.description = description;
         this.url = url;
@@ -39,10 +36,6 @@ public class Forum {
 
     public String getGroupId() {
         return groupId;
-    }
-
-    public String getTeacherId() {
-        return teacherId;
     }
 
     public String getTitle() {
@@ -59,5 +52,17 @@ public class Forum {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

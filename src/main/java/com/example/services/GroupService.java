@@ -68,9 +68,9 @@ public class GroupService {
     }
 
 
-    public GroupResponseDto create(CreateGroupDto dto) {
+    public GroupResponseDto create(CreateGroupDto dto, String teacherId) {
 
-        Optional<User> user = authRepository.findById(dto.getTeacherId());
+        Optional<User> user = authRepository.findById(teacherId);
 
         if (user.isEmpty()) {
             throw new NotFoundException("El docente no existe");
@@ -84,7 +84,7 @@ public class GroupService {
         Optional<Group> optional = repository.findExist(
                 dto.getSemester(),
                 dto.getGroup(),
-                dto.getTeacherId()
+                teacherId
         );
 
         if (optional.isPresent()) {
@@ -99,7 +99,7 @@ public class GroupService {
                 dto.getSemester(),
                 dto.getGroup(),
                 code,
-                dto.getTeacherId()
+                teacherId
         );
 
         repository.create(group);

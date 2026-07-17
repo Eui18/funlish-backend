@@ -17,7 +17,7 @@ public class StudentController {
 
     public void joinGroup(Context context) {
 
-        String studentId = context.pathParam("studentId");
+        String studentId = context.attribute("userId");
         JoinGroupDto dto = context.bodyAsClass(JoinGroupDto.class);
         DtoValidator.validate(dto);
         service.joinGroup(studentId, dto);
@@ -26,14 +26,14 @@ public class StudentController {
 
     public void leaveGroup(Context context) {
 
-        String studentId = context.pathParam("studentId");
+        String studentId = context.attribute("userId");
         service.leaveGroup(studentId);
         context.status(200).json(new MessageResponseDto("Alumno retirado correctamente del grupo"));
     }
 
     public void findGroup(Context context) {
 
-        String studentId = context.pathParam("studentId");
+        String studentId = context.attribute("userId");
         var response = service.findGroup(studentId);
         context.status(200).json(response);
     }

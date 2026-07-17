@@ -1,7 +1,6 @@
 package com.example.controllers;
 
 import com.example.services.ActivityStudentService;
-
 import io.javalin.http.Context;
 
 public class ActivityStudentController {
@@ -15,28 +14,18 @@ public class ActivityStudentController {
 
     public void start(Context context) {
 
-        String studentId = context.pathParam("studentId");
+        String studentId = context.attribute("userId");
         String activityId = context.pathParam("activityId");
 
-        context.json(
-                service.startActivity(
-                        studentId,
-                        activityId
-                )
-        );
+        context.json(service.startActivity(studentId, activityId));
     }
 
 
     public void findAttempt(Context context) {
 
-        String studentId = context.pathParam("studentId");
+        String studentId = context.attribute("userId");
         String activityId = context.pathParam("activityId");
 
-        context.json(
-                service.findAttempt(
-                        studentId,
-                        activityId
-                )
-        );
+        context.json(service.findAttempt(studentId, activityId));
     }
 }

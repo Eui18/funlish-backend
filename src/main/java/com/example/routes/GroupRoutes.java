@@ -16,7 +16,7 @@ public class GroupRoutes {
     public void register(Javalin app) {
 
         //docente
-        app.get("/groups/teacher/{teacherId}", groupController::findAll);
+        app.get("/groups", groupController::findAll);
         app.get("/groups/{id}", groupController::findById);
         app.post("/groups", groupController::create);
         app.patch("/groups/{id}", groupController::update);

@@ -1,9 +1,12 @@
 package com.example.repository.activity;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,28 +30,34 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             INSERT INTO actividad (
                 id,
                 id_tema,
-                id_docente,
                 titulo,
                 descripcion,
                 tipo_actividad,
                 puntaje_por_pregunta,
                 duracion_minutos,
-                estado
+                estado,
+                fecha_inicio,
+                fecha_final,
+                hora_inicio,
+                hora_final
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, activity.getId());
             statement.setString(2, activity.getTopicId());
-            statement.setString(3, activity.getTeacherId());
-            statement.setString(4, activity.getTitle());
-            statement.setString(5, activity.getDescription());
-            statement.setString(6, activity.getType().name());
-            statement.setInt(7, activity.getScorePerQuestion());
-            statement.setInt(8, activity.getDurationMinutes());
-            statement.setString(9, activity.getStatus().name());
+            statement.setString(3, activity.getTitle());
+            statement.setString(4, activity.getDescription());
+            statement.setString(5, activity.getType().name());
+            statement.setInt(6, activity.getScorePerQuestion());
+            statement.setInt(7, activity.getDurationMinutes());
+            statement.setString(8, activity.getStatus().name());
+            setDate(statement, 9, activity.getStartDate() != null ? Date.valueOf(activity.getStartDate()) : null);
+            setDate(statement, 10, activity.getEndDate() != null ? Date.valueOf(activity.getEndDate()) : null);
+            setTime(statement, 11, activity.getStartTime() != null ? Time.valueOf(activity.getStartTime()) : null);
+            setTime(statement, 12, activity.getEndTime() != null ? Time.valueOf(activity.getEndTime()) : null);
 
             statement.executeUpdate();
 
@@ -70,7 +79,11 @@ public class ActivityRepositoryImpl implements ActivityRepository {
                 descripcion = ?,
                 tipo_actividad = ?,
                 puntaje_por_pregunta = ?,
-                duracion_minutos = ?
+                duracion_minutos = ?,
+                fecha_inicio = ?,
+                fecha_final = ?,
+                hora_inicio = ?,
+                hora_final = ?
             WHERE id = ?
             """;
 
@@ -81,7 +94,11 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             statement.setString(3, activity.getType().name());
             statement.setInt(4, activity.getScorePerQuestion());
             statement.setInt(5, activity.getDurationMinutes());
-            statement.setString(6, activity.getId());
+            setDate(statement, 6, activity.getStartDate() != null ? Date.valueOf(activity.getStartDate()) : null);
+            setDate(statement, 7, activity.getEndDate() != null ? Date.valueOf(activity.getEndDate()) : null);
+            setTime(statement, 8, activity.getStartTime() != null ? Time.valueOf(activity.getStartTime()) : null);
+            setTime(statement, 9, activity.getEndTime() != null ? Time.valueOf(activity.getEndTime()) : null);
+            statement.setString(10, activity.getId());
 
             statement.executeUpdate();
 
@@ -115,6 +132,29 @@ public class ActivityRepositoryImpl implements ActivityRepository {
 
 
 
+    //finish
+    @Override
+    public void finish(String activityId) {
+
+        String sql = """
+            UPDATE actividad
+            SET estado = 'FINISHED'
+            WHERE id = ?
+            """;
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, activityId);
+
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al finalizar la actividad.", e);
+        }
+    }
+
+
+
     //delete
     @Override
     public void delete(String id) {
@@ -143,14 +183,17 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             SELECT
                 id,
                 id_tema,
-                id_docente,
                 titulo,
                 descripcion,
                 tipo_actividad,
                 puntaje_por_pregunta,
                 duracion_minutos,
                 estado,
-                created_at
+                created_at,
+                fecha_inicio,
+                fecha_final,
+                hora_inicio,
+                hora_final
             FROM actividad
             WHERE id = ?
             """;
@@ -181,14 +224,17 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             SELECT
                 id,
                 id_tema,
-                id_docente,
                 titulo,
                 descripcion,
                 tipo_actividad,
                 puntaje_por_pregunta,
                 duracion_minutos,
                 estado,
-                created_at
+                created_at,
+                fecha_inicio,
+                fecha_final,
+                hora_inicio,
+                hora_final
             FROM actividad
             WHERE id_tema = ?
             ORDER BY created_at DESC
@@ -206,11 +252,11 @@ public class ActivityRepositoryImpl implements ActivityRepository {
                 activities.add(mapActivity(rs));
             }
 
-            return activities;
-
         } catch (SQLException e) {
             throw new RuntimeException("Error al obtener las actividades.", e);
         }
+
+        return activities;
     }
 
 
@@ -268,20 +314,92 @@ public class ActivityRepositoryImpl implements ActivityRepository {
     }
 
 
+    // Si ya pasó fecha_final + hora_final y sigue PUBLISHED, la considera vencida
+    @Override
+    public List<Activity> findExpiredPublished() {
+
+        String sql = """
+            SELECT
+                id,
+                id_tema,
+                titulo,
+                descripcion,
+                tipo_actividad,
+                puntaje_por_pregunta,
+                duracion_minutos,
+                estado,
+                created_at,
+                fecha_inicio,
+                fecha_final,
+                hora_inicio,
+                hora_final
+            FROM actividad
+            WHERE estado = 'PUBLISHED'
+            AND fecha_final IS NOT NULL
+            AND hora_final IS NOT NULL
+            AND TIMESTAMP(fecha_final, hora_final) <= NOW()
+            """;
+
+        List<Activity> activities = new ArrayList<>();
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            ResultSet rs = statement.executeQuery();
+
+            while (rs.next()) {
+                activities.add(mapActivity(rs));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar actividades vencidas.", e);
+        }
+
+        return activities;
+    }
+
+
+    private void setDate(PreparedStatement statement, int index, Date value) throws SQLException {
+
+        if (value == null) {
+            statement.setNull(index, Types.DATE);
+        } else {
+            statement.setDate(index, value);
+        }
+    }
+
+
+    private void setTime(PreparedStatement statement, int index, Time value) throws SQLException {
+
+        if (value == null) {
+            statement.setNull(index, Types.TIME);
+        } else {
+            statement.setTime(index, value);
+        }
+    }
+
+
     //mapActivity
     private Activity mapActivity(ResultSet rs) throws SQLException {
+
+        Date startDate = rs.getDate("fecha_inicio");
+        Date endDate = rs.getDate("fecha_final");
+        Time startTime = rs.getTime("hora_inicio");
+        Time endTime = rs.getTime("hora_final");
 
         return new Activity(
                 rs.getString("id"),
                 rs.getString("id_tema"),
-                rs.getString("id_docente"),
                 rs.getString("titulo"),
                 rs.getString("descripcion"),
                 ActivityType.valueOf(rs.getString("tipo_actividad")),
                 rs.getInt("duracion_minutos"),
                 rs.getInt("puntaje_por_pregunta"),
                 ActivityStatus.valueOf(rs.getString("estado")),
-                rs.getTimestamp("created_at").toLocalDateTime()
+                rs.getTimestamp("created_at").toLocalDateTime(),
+                startDate != null ? startDate.toLocalDate() : null,
+                endDate != null ? endDate.toLocalDate() : null,
+                startTime != null ? startTime.toLocalTime() : null,
+                endTime != null ? endTime.toLocalTime() : null
         );
     }
 
