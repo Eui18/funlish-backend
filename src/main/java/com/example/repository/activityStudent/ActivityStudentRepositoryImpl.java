@@ -86,25 +86,32 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
     public Optional<ActivityStudent> findById(String id){
 
         String sql = """
-                SELECT *
-                FROM actividad_alumno
-                WHERE id = ?
+            SELECT
+                id,
+                id_actividad,
+                id_alumno,
+                estado,
+                puntaje,
+                bonus_puntos,
+                tiempo_empleado,
+                fecha_inicio,
+                fecha_entrega,
+                ultima_pregunta
+            FROM actividad_alumno
+            WHERE id = ?
                 """;
         try(
             PreparedStatement ps =
                 connection.prepareStatement(sql)
         ){
-
             ps.setString(1,id);
 
             ResultSet rs =
                     ps.executeQuery();
 
-
             if(rs.next()){
                 return Optional.of(map(rs));
             }
-
 
         }catch(SQLException e){
 
@@ -113,26 +120,30 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
                 + e.getMessage()
             );
         }
-
-
         return Optional.empty();
     }
 
 
 
     @Override
-    public Optional<ActivityStudent> findByStudentAndActivity(
-            String studentId,
-            String activityId
-    ){
+    public Optional<ActivityStudent> findByStudentAndActivity(String studentId, String activityId){
 
         String sql = """
-                SELECT *
-                FROM actividad_alumno
-                WHERE id_alumno = ?
-                AND id_actividad = ?
+            SELECT
+                id,
+                id_actividad,
+                id_alumno,
+                estado,
+                puntaje,
+                bonus_puntos,
+                tiempo_empleado,
+                fecha_inicio,
+                fecha_entrega,
+                ultima_pregunta
+            FROM actividad_alumno
+            WHERE id_alumno = ?
+            AND id_actividad = ?
                 """;
-
 
         try(
             PreparedStatement ps =
@@ -142,15 +153,12 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
             ps.setString(1,studentId);
             ps.setString(2,activityId);
 
-
             ResultSet rs =
                     ps.executeQuery();
-
 
             if(rs.next()){
                 return Optional.of(map(rs));
             }
-
 
         }catch(SQLException e){
 
@@ -160,16 +168,13 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
             );
         }
 
-
         return Optional.empty();
     }
 
 
 
     @Override
-    public boolean update(
-            ActivityStudent activityStudent
-    ){
+    public boolean update(ActivityStudent activityStudent){
 
         String sql = """
                 UPDATE actividad_alumno
@@ -182,8 +187,6 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
                     ultima_pregunta = ?
                 WHERE id = ?
                 """;
-
-
         try(
             PreparedStatement ps =
                 connection.prepareStatement(sql)
@@ -231,7 +234,6 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
 
             return ps.executeUpdate() > 0;
 
-
         }catch(SQLException e){
 
             throw new RuntimeException(
@@ -250,9 +252,7 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
         return new ActivityStudent(
 
             rs.getString("id"),
-
             rs.getString("id_actividad"),
-
             rs.getString("id_alumno"),
 
             ActivityStudentStatus.valueOf(
@@ -260,9 +260,7 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
             ),
 
             rs.getBigDecimal("puntaje"),
-
             rs.getBigDecimal("bonus_puntos"),
-
             rs.getObject(
                 "tiempo_empleado",
                 Integer.class

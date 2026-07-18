@@ -37,11 +37,13 @@ public class StudentGameService {
     }
 
 
-    public ActivityContentDto getCurrentContent(String activityStudentId) {
+    public ActivityContentDto getCurrentContent(String activityStudentId, String studentId) {
 
         ActivityStudent attempt = activityStudentRepository.findById(activityStudentId)
                 .orElseThrow(() -> 
                         new NotFoundException("Intento no encontrado."));
+
+        validateOwnership(attempt, studentId);
 
         Activity activity = activityRepository.findById(attempt.getActivityId())
                 .orElseThrow(() ->
@@ -60,12 +62,14 @@ public class StudentGameService {
     }
 
 
-    public ResultDto answerTrivia(String activityStudentId, AnswerDto dto) {
+    public ResultDto answerTrivia(String activityStudentId, AnswerDto dto, String studentId) {
 
         ActivityStudent attempt = activityStudentRepository.findById(activityStudentId)
                 .orElseThrow(() ->
                         new NotFoundException("Intento no encontrado."));
-        
+
+        validateOwnership(attempt, studentId);
+
         if(!attempt.getLastQuestion().equals(dto.getNumber())){
 
                 throw new ValidationException(List.of("La pregunta enviada no corresponde al progreso actual."));
@@ -121,12 +125,14 @@ public class StudentGameService {
     }
 
 
-    public ResultDto answerScramble(String activityStudentId, AnswerDto dto) {
+    public ResultDto answerScramble(String activityStudentId, AnswerDto dto, String studentId) {
 
         ActivityStudent attempt = activityStudentRepository.findById(activityStudentId)
                 .orElseThrow(() ->
                         new NotFoundException("Intento no encontrado.")
                 );
+
+        validateOwnership(attempt, studentId);
 
         if(!attempt.getLastQuestion().equals(dto.getNumber())) {
 
@@ -231,6 +237,14 @@ public class StudentGameService {
     }
 
 
+    private void validateOwnership(ActivityStudent attempt, String studentId) {
+
+        if (!attempt.getStudentId().equals(studentId)) {
+            throw new ValidationException(List.of("No tienes permiso sobre este intento."));
+        }
+    }
+
+
     private void validateCompleted(ActivityStudent attempt) {
 
         if(attempt.getStatus() == ActivityStudentStatus.COMPLETADA) {
@@ -241,11 +255,13 @@ public class StudentGameService {
     }
 
 
-    public ReviewDto getReview(String activityStudentId) {
+    public ReviewDto getReview(String activityStudentId, String studentId) {
 
         ActivityStudent attempt = activityStudentRepository.findById(activityStudentId)
                 .orElseThrow(() ->
                         new NotFoundException("Intento no encontrado."));
+
+        validateOwnership(attempt, studentId);
 
         if (attempt.getStatus() != ActivityStudentStatus.COMPLETADA) {
             throw new ValidationException(
@@ -291,7 +307,6 @@ public class StudentGameService {
         if(text == null) {
             return "";
         }
-
         return text.trim().replaceAll("\\s+", " ").toLowerCase();
     }
 }

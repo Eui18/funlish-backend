@@ -149,7 +149,7 @@ public class DependencyContainer {
 
         // Perfil y estadísticas
         var profileRepository = new ProfileRepositoryImpl(connection);
-        var profileService = new ProfileService(profileRepository);
+        var profileService = new ProfileService(profileRepository, authRepository);
         var profileController = new ProfileController(profileService);
         this.profileRoutes = new ProfileRoutes(profileController);
 

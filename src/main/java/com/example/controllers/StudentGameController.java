@@ -18,9 +18,10 @@ public class StudentGameController {
     public void getContent(Context context) {
 
         String activityStudentId = context.pathParam("activityStudentId");
+        String studentId = context.attribute("userId");
 
         context.json(
-                service.getCurrentContent(activityStudentId)
+                service.getCurrentContent(activityStudentId, studentId)
         );
     }
 
@@ -28,13 +29,14 @@ public class StudentGameController {
     public void answerTrivia(Context context) {
 
         String activityStudentId = context.pathParam("activityStudentId");
+        String studentId = context.attribute("userId");
 
         AnswerDto dto = context.bodyAsClass(AnswerDto.class);
 
         DtoValidator.validate(dto);
 
         context.json(
-                service.answerTrivia(activityStudentId, dto)
+                service.answerTrivia(activityStudentId, dto, studentId)
         );
     }
 
@@ -42,13 +44,14 @@ public class StudentGameController {
     public void answerScramble(Context context) {
 
         String activityStudentId = context.pathParam("activityStudentId");
+        String studentId = context.attribute("userId");
 
         AnswerDto dto = context.bodyAsClass(AnswerDto.class);
 
         DtoValidator.validate(dto);
 
         context.json(
-                service.answerScramble(activityStudentId, dto)
+                service.answerScramble(activityStudentId, dto, studentId)
         );
     }
 
@@ -56,9 +59,10 @@ public class StudentGameController {
     public void getReview(Context context) {
 
         String activityStudentId = context.pathParam("activityStudentId");
+        String studentId = context.attribute("userId");
 
         context.json(
-                service.getReview(activityStudentId)
+                service.getReview(activityStudentId, studentId)
         );
     }
 }

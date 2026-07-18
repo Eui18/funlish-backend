@@ -341,8 +341,10 @@ public class ProfileRepositoryImpl implements ProfileRepository {
             FROM actividad_alumno aa
             JOIN actividad a ON a.id = aa.id_actividad
             JOIN tema t ON t.id = a.id_tema
+            JOIN unidad un ON un.id = t.id_unidad
+            JOIN grupo g ON g.id = un.id_grupo
 
-            WHERE a.id_docente = ?
+            WHERE g.id_docente = ?
             AND aa.estado = 'COMPLETADA'
 
             GROUP BY t.id, t.titulo
@@ -401,8 +403,11 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
             FROM actividad_alumno aa
             JOIN actividad a ON a.id = aa.id_actividad
+            JOIN tema t ON t.id = a.id_tema
+            JOIN unidad un ON un.id = t.id_unidad
+            JOIN grupo g ON g.id = un.id_grupo
 
-            WHERE a.id_docente = ?
+            WHERE g.id_docente = ?
             AND aa.estado = 'COMPLETADA'
 
             GROUP BY a.tipo_actividad
