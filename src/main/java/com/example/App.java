@@ -19,13 +19,24 @@ public class App {
             Connection connection = databaseConfig.getDataSource().getConnection();
             DependencyContainer container = new DependencyContainer(connection);
 
-            Javalin app = Javalin.create();
+            Javalin app = Javalin.create(config -> {
+                config.bundledPlugins.enableCors(cors -> {
+                    cors.addRule(it -> {
+                        it.allowHost("http://localhost:5173");
+                    });
+                });
+            });
 
             new GlobalExceptionHandler().register(app);
 
             // Filtro de autenticación JWT
             // Rutas públicas: quedan explícitamente excluidas de la validación
             app.before(ctx -> {
+
+                // Permitir preflight de CORS
+                if (ctx.method().name().equals("OPTIONS")) {
+                    return;
+                }
 
                 String method = ctx.method().name();
                 String path = ctx.path();
