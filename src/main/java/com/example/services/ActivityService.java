@@ -31,6 +31,7 @@ import com.example.repository.topic.TopicRepository;
 import com.example.repository.trivia.TriviaRepository;
 import com.example.repository.unit.UnitRepository;
 import com.example.utils.DtoValidator;
+import com.example.utils.OwnershipValidator;
 import com.example.utils.TextNormalizer;
 
 public class ActivityService {
@@ -41,6 +42,7 @@ public class ActivityService {
     private final AuthRepository authRepository;
     private final TriviaRepository triviaRepository;
     private final ScrambleRepository scrambleRepository;
+    private final OwnershipValidator ownershipValidator;
 
     public ActivityService(
             ActivityRepository activityRepository,
@@ -48,7 +50,8 @@ public class ActivityService {
             UnitRepository unitRepository,
             AuthRepository authRepository,
             TriviaRepository triviaRepository,
-            ScrambleRepository scrambleRepository) {
+            ScrambleRepository scrambleRepository,
+            OwnershipValidator ownershipValidator) {
 
         this.activityRepository = activityRepository;
         this.topicRepository = topicRepository;
@@ -56,6 +59,7 @@ public class ActivityService {
         this.authRepository = authRepository;
         this.triviaRepository = triviaRepository;
         this.scrambleRepository = scrambleRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
 
@@ -105,7 +109,7 @@ public class ActivityService {
 
 
     // Actualizar
-    public void update(String id, UpdateActivityDto dto) {
+    public void update(String id, UpdateActivityDto dto, String teacherId) {
 
         DtoValidator.validate(dto);
 
@@ -114,6 +118,8 @@ public class ActivityService {
                         new IllegalArgumentException(
                                 "Actividad no encontrada."
                         ));
+
+        ownershipValidator.assertTeacherOwnsTopic(activity.getTopicId(), teacherId);
 
         boolean isDraft = activity.getStatus() == ActivityStatus.DRAFT;
 
@@ -178,13 +184,15 @@ public class ActivityService {
 
 
     // Publicar
-    public void publish(String id) {
+    public void publish(String id, String teacherId) {
 
         Activity activity = activityRepository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "Actividad no encontrada."
                         ));
+
+        ownershipValidator.assertTeacherOwnsTopic(activity.getTopicId(), teacherId);
 
         if (activity.getStatus() == ActivityStatus.PUBLISHED) {
             throw new IllegalArgumentException("La actividad ya fue publicada.");
@@ -231,11 +239,13 @@ public class ActivityService {
 
 
     // Eliminar
-    public void delete(String id) {
+    public void delete(String id, String teacherId) {
 
-        activityRepository.findById(id)
+        Activity activity = activityRepository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException("Actividad no encontrada."));
+
+        ownershipValidator.assertTeacherOwnsTopic(activity.getTopicId(), teacherId);
 
         if (activityRepository.hasStudentAttempts(id)) {
             throw new IllegalArgumentException("No es posible eliminar una actividad con intentos registrados.");

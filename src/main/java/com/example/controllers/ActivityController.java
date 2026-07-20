@@ -47,10 +47,12 @@ public class ActivityController {
     public void update(Context context) {
 
         UpdateActivityDto dto = context.bodyAsClass(UpdateActivityDto.class);
+        String teacherId = context.attribute("userId");
 
         activityService.update(
                 context.pathParam("id"),
-                dto);
+                dto,
+                teacherId);
 
         context.json(Map.of(
                 "message", "Actividad actualizada correctamente."));
@@ -58,7 +60,9 @@ public class ActivityController {
 
     public void publish(Context context) {
 
-        activityService.publish(context.pathParam("id"));
+        String teacherId = context.attribute("userId");
+
+        activityService.publish(context.pathParam("id"), teacherId);
 
         context.json(Map.of(
                 "message", "Actividad publicada."));
@@ -66,7 +70,9 @@ public class ActivityController {
 
     public void delete(Context context) {
 
-        activityService.delete(context.pathParam("id"));
+        String teacherId = context.attribute("userId");
+
+        activityService.delete(context.pathParam("id"), teacherId);
 
         context.json(Map.of(
                 "message", "Actividad eliminada."));

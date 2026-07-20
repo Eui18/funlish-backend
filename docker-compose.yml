@@ -1,0 +1,9 @@
+services:
+  backend:
+    build: .
+    container_name: funlish-backend
+    ports:
+      - "7000:7000"
+    env_file:
+      - .env
+    restart: always

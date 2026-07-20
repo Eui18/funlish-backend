@@ -18,17 +18,25 @@ import com.example.models.user.User;
 import com.example.repository.auth.AuthRepository;
 import com.example.repository.group.GroupRepository;
 import com.example.repository.unit.UnitRepository;
+import com.example.utils.OwnershipValidator;
 
 public class UnitService {
 
     private final UnitRepository repository;
     private final GroupRepository groupRepository;
     private final AuthRepository authRepository;
+    private final OwnershipValidator ownershipValidator;
 
-    public UnitService(UnitRepository repository, GroupRepository groupRepository, AuthRepository authRepository) {
+    public UnitService(
+            UnitRepository repository,
+            GroupRepository groupRepository,
+            AuthRepository authRepository,
+            OwnershipValidator ownershipValidator) {
+
         this.repository = repository;
         this.groupRepository = groupRepository;
         this.authRepository = authRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public List<UnitResponseDto> findAll(String groupId) {
@@ -89,7 +97,10 @@ public class UnitService {
         return toResponseDto(unit);
     }
 
-    public UnitResponseDto update(String id, UpdateUnitDto dto) {
+    public UnitResponseDto update(String id, UpdateUnitDto dto, String teacherId) {
+
+        ownershipValidator.assertTeacherOwnsUnit(id, teacherId);
+
         Unit unit = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Unidad no encontrada."));
 
@@ -118,7 +129,10 @@ public class UnitService {
         return toResponseDto(unit);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String teacherId) {
+
+        ownershipValidator.assertTeacherOwnsUnit(id, teacherId);
+
         repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Unidad no encontrada."));
 

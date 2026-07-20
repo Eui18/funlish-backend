@@ -6,7 +6,7 @@ import com.example.dtos.resource.CreateResourceDto;
 import com.example.dtos.resource.ResourceResponseDto;
 import com.example.dtos.resource.UpdateResourceDto;
 import com.example.exceptions.NotFoundException;
-import com.example.exceptions.ResourceAlreadyExistsException; // Importada
+import com.example.exceptions.ResourceAlreadyExistsException;
 import com.example.exceptions.ValidationException;
 import com.example.models.resource.Resource;
 import com.example.models.resource.ResourceType;
@@ -15,17 +15,25 @@ import com.example.models.user.User;
 import com.example.repository.auth.AuthRepository;
 import com.example.repository.resource.ResourceRepository;
 import com.example.repository.topic.TopicRepository;
+import com.example.utils.OwnershipValidator;
 
 public class ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final TopicRepository topicRepository;
     private final AuthRepository authRepository;
+    private final OwnershipValidator ownershipValidator;
 
-    public ResourceService(ResourceRepository resourceRepository, TopicRepository topicRepository, AuthRepository authRepository) {
+    public ResourceService(
+            ResourceRepository resourceRepository,
+            TopicRepository topicRepository,
+            AuthRepository authRepository,
+            OwnershipValidator ownershipValidator) {
+
         this.resourceRepository = resourceRepository;
         this.topicRepository = topicRepository;
         this.authRepository = authRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public ResourceResponseDto create(String topicId, CreateResourceDto dto, String teacherId) {
@@ -67,12 +75,15 @@ public class ResourceService {
         return toResponseDto(resource);
     }
 
-    public ResourceResponseDto update(String id, UpdateResourceDto dto) {
+    public ResourceResponseDto update(String id, UpdateResourceDto dto, String teacherId) {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Recurso no encontrado."));
+
+        ownershipValidator.assertTeacherOwnsTopic(resource.getTopicId(), teacherId);
+
         if (dto.getName() != null) {
             dto.setName(dto.getName().trim());
-            
+
             if (!resource.getName().equals(dto.getName())
                     && resourceRepository.existsByName(resource.getTopicId(), dto.getName())) {
                 throw new ResourceAlreadyExistsException("Ya existe un recurso con ese nombre en este tema.");
@@ -108,9 +119,12 @@ public class ResourceService {
         return toResponseDto(resource);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String teacherId) {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Recurso no encontrado."));
+
+        ownershipValidator.assertTeacherOwnsTopic(resource.getTopicId(), teacherId);
+
         resourceRepository.delete(resource.getId());
     }
 

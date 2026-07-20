@@ -15,17 +15,25 @@ import com.example.models.user.User;
 import com.example.repository.auth.AuthRepository;
 import com.example.repository.topic.TopicRepository;
 import com.example.repository.unit.UnitRepository;
+import com.example.utils.OwnershipValidator;
 
 public class TopicService {
 
     private final TopicRepository repository;
     private final UnitRepository unitRepository;
     private final AuthRepository authRepository;
+    private final OwnershipValidator ownershipValidator;
 
-    public TopicService(TopicRepository repository, UnitRepository unitRepository, AuthRepository authRepository) {
+    public TopicService(
+            TopicRepository repository,
+            UnitRepository unitRepository,
+            AuthRepository authRepository,
+            OwnershipValidator ownershipValidator) {
+
         this.repository = repository;
         this.unitRepository = unitRepository;
         this.authRepository = authRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
     public TopicResponseDto create(String unitId, CreateTopicDto dto, String teacherId) {
@@ -76,7 +84,9 @@ public class TopicService {
         return toResponseDto(topic);
     }
 
-    public TopicResponseDto update(String id, UpdateTopicDto dto) {
+    public TopicResponseDto update(String id, UpdateTopicDto dto, String teacherId) {
+
+        ownershipValidator.assertTeacherOwnsTopic(id, teacherId);
 
         Topic topic = repository.findById(id)
                 .orElseThrow(() ->
@@ -85,7 +95,7 @@ public class TopicService {
 
         if (dto.getTitle() != null) {
             String title = dto.getTitle().trim();
-            
+
             if (title.isBlank()) {
                 throw new ValidationException(List.of("El título del tema es obligatorio."));
             }
@@ -111,7 +121,9 @@ public class TopicService {
         return toResponseDto(topic);
     }
 
-    public void delete(String id) {
+    public void delete(String id, String teacherId) {
+
+        ownershipValidator.assertTeacherOwnsTopic(id, teacherId);
 
         Topic topic = repository.findById(id)
                 .orElseThrow(() ->

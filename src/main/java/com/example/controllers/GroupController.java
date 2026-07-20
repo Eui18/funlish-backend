@@ -47,14 +47,16 @@ public class GroupController {
         String id = context.pathParam("id");
         UpdateGroupDto dto = context.bodyAsClass(UpdateGroupDto.class);
         DtoValidator.validate(dto);
-        var response = groupService.update(id, dto);
+        String teacherId = context.attribute("userId");
+        var response = groupService.update(id, dto, teacherId);
         context.json(response);
     }
 
     public void delete(Context context) {
 
         String id = context.pathParam("id");
-        groupService.delete(id);
+        String teacherId = context.attribute("userId");
+        groupService.delete(id, teacherId);
 
         context.status(200).json(new MessageResponseDto("Grupo eliminado correctamente"));
     }
@@ -71,6 +73,28 @@ public class GroupController {
         String groupId = context.pathParam("id");
         int total = groupService.countStudents(groupId);
         context.json(Map.of("students", total));
+    }
+
+    // GET /groups/{groupId}/students/{studentId}/profile
+    public void getStudentProfile(Context context) {
+
+        String groupId = context.pathParam("groupId");
+        String studentId = context.pathParam("studentId");
+        String teacherId = context.attribute("userId");
+
+        context.json(groupService.getStudentProfileForTeacher(groupId, studentId, teacherId));
+    }
+
+    // DELETE /groups/{groupId}/students/{studentId}
+    public void removeStudent(Context context) {
+
+        String groupId = context.pathParam("groupId");
+        String studentId = context.pathParam("studentId");
+        String teacherId = context.attribute("userId");
+
+        groupService.removeStudent(groupId, studentId, teacherId);
+
+        context.status(200).json(new MessageResponseDto("Alumno desvinculado correctamente del grupo"));
     }
 
 }

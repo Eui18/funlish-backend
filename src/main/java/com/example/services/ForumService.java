@@ -146,7 +146,7 @@ public class ForumService {
 
     public void delete(String id, String teacherId) {
 
-        repository.findById(id)
+        Forum forum = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Publicación no encontrada."));
 
         User teacher = authRepository.findById(teacherId)
@@ -154,6 +154,13 @@ public class ForumService {
 
         if (teacher.getRole() != Role.TEACHER) {
             throw new ValidationException(List.of("Solo un docente puede eliminar publicaciones."));
+        }
+
+        Group group = groupRepository.findById(forum.getGroupId())
+                .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
+
+        if (!group.getTeacherId().equals(teacherId)) {
+            throw new ValidationException(List.of("Solo el docente propietario del foro puede eliminar esta publicación."));
         }
 
         boolean deleted = repository.delete(id);
@@ -194,7 +201,7 @@ public class ForumService {
 
     public void deleteComment(String commentId, String requesterId) {
 
-        commentRepository.findById(commentId)
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Comentario no encontrado."));
 
         User requester = authRepository.findById(requesterId)
@@ -202,6 +209,16 @@ public class ForumService {
 
         if (requester.getRole() != Role.TEACHER) {
             throw new ValidationException(List.of("Solo un docente puede eliminar comentarios."));
+        }
+
+        Forum forum = repository.findById(comment.getForumId())
+                .orElseThrow(() -> new NotFoundException("Publicación no encontrada."));
+
+        Group group = groupRepository.findById(forum.getGroupId())
+                .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
+
+        if (!group.getTeacherId().equals(requesterId)) {
+            throw new ValidationException(List.of("Solo el docente propietario del foro puede eliminar este comentario."));
         }
 
         boolean deleted = commentRepository.delete(commentId);

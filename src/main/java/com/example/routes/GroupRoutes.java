@@ -24,5 +24,11 @@ public class GroupRoutes {
 
         app.get("/groups/{id}/students", groupController::findStudents);
         app.get("/groups/{id}/students/count", groupController::countStudents);
+
+        // Perfil de un alumno del grupo, consultado por el docente dueño del grupo
+        app.get("/groups/{groupId}/students/{studentId}/profile", groupController::getStudentProfile);
+
+        // Desvincular a un alumno del grupo (acción del docente dueño del grupo)
+        app.delete("/groups/{groupId}/students/{studentId}", groupController::removeStudent);
     }
 }

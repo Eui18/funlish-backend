@@ -21,7 +21,7 @@ public class TopicController {
         String unitId = context.pathParam("unitId");
 
         CreateTopicDto dto = context.bodyAsClass(CreateTopicDto.class);
-        DtoValidator.validate(dto); // CORRECCIÓN: Agregado
+        DtoValidator.validate(dto);
         String teacherId = context.attribute("userId");
 
         context.status(201)
@@ -54,10 +54,11 @@ public class TopicController {
         String id = context.pathParam("id");
 
         UpdateTopicDto dto = context.bodyAsClass(UpdateTopicDto.class);
-        DtoValidator.validate(dto); // CORRECCIÓN: Agregado
+        DtoValidator.validate(dto);
+        String teacherId = context.attribute("userId");
 
         context.json(
-                topicService.update(id, dto)
+                topicService.update(id, dto, teacherId)
         );
     }
 
@@ -65,8 +66,9 @@ public class TopicController {
     public void delete(Context context) {
 
         String id = context.pathParam("id");
+        String teacherId = context.attribute("userId");
 
-        topicService.delete(id);
+        topicService.delete(id, teacherId);
 
         context.status(204); // No Content
     }

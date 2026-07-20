@@ -20,21 +20,30 @@ import com.example.repository.activity.ActivityRepository;
 import com.example.repository.auth.AuthRepository;
 import com.example.repository.trivia.TriviaRepository;
 import com.example.utils.DtoValidator;
+import com.example.utils.OwnershipValidator;
 
 public class TriviaService {
+
+    // Regla única del sistema: una pregunta de trivia siempre tiene
+    // exactamente 4 opciones, con exactamente una marcada como correcta.
+    // Debe coincidir con @Size(min = 4, max = 4) en CreateTriviaDto/UpdateTriviaDto.
+    private static final int REQUIRED_OPTIONS = 4;
 
     private final TriviaRepository triviaRepository;
     private final ActivityRepository activityRepository;
     private final AuthRepository authRepository;
+    private final OwnershipValidator ownershipValidator;
 
     public TriviaService(
             TriviaRepository triviaRepository,
             ActivityRepository activityRepository,
-            AuthRepository authRepository
+            AuthRepository authRepository,
+            OwnershipValidator ownershipValidator
     ) {
         this.triviaRepository = triviaRepository;
         this.activityRepository = activityRepository;
         this.authRepository = authRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
 
@@ -93,17 +102,12 @@ public class TriviaService {
     }
 
 
+    // Regla única del sistema: exactamente 4 opciones, exactamente una correcta.
     private void validateOptions(List<OptionDto> options) {
 
-        if(options == null || options.size() < 2) {
+        if(options == null || options.size() != REQUIRED_OPTIONS) {
             throw new ValidationException(
-                    List.of("La pregunta debe tener mínimo 2 opciones.")
-            );
-        }
-
-        if(options.size() > 4) {
-            throw new ValidationException(
-                    List.of("La pregunta no puede tener más de 4 opciones.")
+                    List.of("La pregunta debe tener exactamente 4 opciones.")
             );
         }
 
@@ -126,7 +130,7 @@ public class TriviaService {
     }
 
 
-    public void update(String triviaId, UpdateTriviaDto dto) {
+    public void update(String triviaId, UpdateTriviaDto dto, String teacherId) {
 
         DtoValidator.validate(dto);
 
@@ -141,6 +145,7 @@ public class TriviaService {
                 new NotFoundException("Actividad no encontrada.")
         );
 
+        ownershipValidator.assertTeacherOwnsTopic(activity.getTopicId(), teacherId);
 
         if(activity.getStatus() != ActivityStatus.DRAFT) {
                 throw new ValidationException(
@@ -179,7 +184,7 @@ public class TriviaService {
         }
 
 
-    public void delete(String triviaId) {
+    public void delete(String triviaId, String teacherId) {
 
         TriviaQuestion question = triviaRepository.findById(triviaId)
                 .orElseThrow(() ->
@@ -191,6 +196,8 @@ public class TriviaService {
         ).orElseThrow(() ->
                 new NotFoundException("Actividad no encontrada.")
         );
+
+        ownershipValidator.assertTeacherOwnsTopic(activity.getTopicId(), teacherId);
 
         if(activity.getStatus() != ActivityStatus.DRAFT) {
             throw new ValidationException(

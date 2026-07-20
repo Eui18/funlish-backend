@@ -34,8 +34,9 @@ public class TriviaController {
     public void update(Context context){
 
         UpdateTriviaDto dto = context.bodyAsClass(UpdateTriviaDto.class);
+        String teacherId = context.attribute("userId");
 
-        triviaService.update(context.pathParam("id"), dto);
+        triviaService.update(context.pathParam("id"), dto, teacherId);
 
         context.json(Map.of(
                     "message",
@@ -46,7 +47,9 @@ public class TriviaController {
 
     public void delete(Context context) {
 
-        triviaService.delete(context.pathParam("id"));
+        String teacherId = context.attribute("userId");
+
+        triviaService.delete(context.pathParam("id"), teacherId);
 
         context.json(Map.of("message", "Pregunta eliminada correctamente."));
     }

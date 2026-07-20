@@ -54,17 +54,19 @@ public class ResourceController {
         UpdateResourceDto dto = context.bodyAsClass(UpdateResourceDto.class);
 
         DtoValidator.validate(dto);
+        String teacherId = context.attribute("userId");
 
         context.json(
-                resourceService.update(id, dto)
+                resourceService.update(id, dto, teacherId)
         );
     }
 
     public void delete(Context context) {
 
         String id = context.pathParam("id");
+        String teacherId = context.attribute("userId");
 
-        resourceService.delete(id);
+        resourceService.delete(id, teacherId);
 
         context.status(204);
     }

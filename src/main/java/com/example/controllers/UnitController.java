@@ -47,15 +47,17 @@ public class UnitController {
 
         UpdateUnitDto dto = context.bodyAsClass(UpdateUnitDto.class);
         DtoValidator.validate(dto);
+        String teacherId = context.attribute("userId");
 
-        var response = unitService.update(id, dto);
+        var response = unitService.update(id, dto, teacherId);
         context.json(response);
     }
 
     public void delete(Context context) {
 
         String id = context.pathParam("id");
-        unitService.delete(id);
+        String teacherId = context.attribute("userId");
+        unitService.delete(id, teacherId);
 
         context.status(204)
                 .json(new MessageResponseDto("Unidad eliminada correctamente"));

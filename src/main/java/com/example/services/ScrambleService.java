@@ -19,21 +19,25 @@ import com.example.models.user.User;
 import com.example.repository.activity.ActivityRepository;
 import com.example.repository.auth.AuthRepository;
 import com.example.repository.scramble.ScrambleRepository;
+import com.example.utils.OwnershipValidator;
 
 public class ScrambleService {
 
     private final ScrambleRepository repository;
     private final ActivityRepository activityRepository;
     private final AuthRepository authRepository;
+    private final OwnershipValidator ownershipValidator;
 
     public ScrambleService(
             ScrambleRepository repository,
             ActivityRepository activityRepository,
-            AuthRepository authRepository
+            AuthRepository authRepository,
+            OwnershipValidator ownershipValidator
     ) {
         this.repository = repository;
         this.activityRepository = activityRepository;
         this.authRepository = authRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
 
@@ -106,7 +110,7 @@ public class ScrambleService {
     }
 
 
-    public void delete(String id) {
+    public void delete(String id, String teacherId) {
 
         Scramble scramble = repository.findById(id)
                 .orElseThrow(() ->
@@ -118,6 +122,8 @@ public class ScrambleService {
         ).orElseThrow(() ->
                 new NotFoundException("Actividad no encontrada.")
         );
+
+        ownershipValidator.assertTeacherOwnsTopic(activity.getTopicId(), teacherId);
 
         if (activity.getStatus() == ActivityStatus.PUBLISHED) {
             throw new ValidationException(

@@ -35,8 +35,9 @@ public class ScrambleController {
     public void delete(Context context) {
 
         String id = context.pathParam("id");
+        String teacherId = context.attribute("userId");
 
-        service.delete(id);
+        service.delete(id, teacherId);
 
         context.json(java.util.Map.of( "message", "Scramble eliminado correctamente."
                 )

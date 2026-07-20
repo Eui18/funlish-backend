@@ -2,6 +2,8 @@ package com.example.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -18,15 +20,30 @@ import com.example.models.user.Role;
 import com.example.models.user.User;
 import com.example.repository.auth.AuthRepository;
 import com.example.repository.group.GroupRepository;
+import com.example.repository.profile.ProfileRepository;
+import com.example.repository.student.StudentRepository;
+import com.example.utils.OwnershipValidator;
 
 public class GroupService {
 
     private final GroupRepository repository;
     private final AuthRepository authRepository;
+    private final StudentRepository studentRepository;
+    private final ProfileRepository profileRepository;
+    private final OwnershipValidator ownershipValidator;
 
-    public GroupService(GroupRepository repository, AuthRepository authRepository) {
+    public GroupService(
+            GroupRepository repository,
+            AuthRepository authRepository,
+            StudentRepository studentRepository,
+            ProfileRepository profileRepository,
+            OwnershipValidator ownershipValidator) {
+
         this.repository = repository;
         this.authRepository = authRepository;
+        this.studentRepository = studentRepository;
+        this.profileRepository = profileRepository;
+        this.ownershipValidator = ownershipValidator;
     }
 
    public List<GroupResponseDto> findAll(String teacherId) {
@@ -107,7 +124,9 @@ public class GroupService {
     }
 
 
-    public GroupResponseDto update(String id, UpdateGroupDto dto) {
+    public GroupResponseDto update(String id, UpdateGroupDto dto, String teacherId) {
+
+        ownershipValidator.assertTeacherOwnsGroup(id, teacherId);
 
         Group group = repository.findById(id)
                 .orElseThrow(() ->
@@ -131,7 +150,9 @@ public class GroupService {
     }
 
 
-    public void delete(String id) {
+    public void delete(String id, String teacherId) {
+
+        ownershipValidator.assertTeacherOwnsGroup(id, teacherId);
 
         boolean deleted = repository.delete(id);
 
@@ -151,6 +172,57 @@ public class GroupService {
         repository.findById(groupId)
                 .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
         return repository.countStudents(groupId);
+    }
+
+
+    // Perfil completo de un alumno del grupo, consultado por el docente dueño del grupo.
+    public Map<String, Object> getStudentProfileForTeacher(String groupId, String studentId, String teacherId) {
+
+        ownershipValidator.assertTeacherOwnsGroup(groupId, teacherId);
+
+        User student = authRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Alumno no encontrado."));
+
+        if (student.getRole() != Role.STUDENT || !groupId.equals(student.getGroupId())) {
+            throw new ValidationException(
+                    List.of("El alumno no pertenece a este grupo.")
+            );
+        }
+
+        var profile = profileRepository.findStudentProfile(studentId)
+                .orElseThrow(() -> new NotFoundException("Alumno no encontrado."));
+
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        response.put("profile", profile);
+        response.put("statistics", profileRepository.findStudentStatistics(studentId));
+        response.put("ranking", profileRepository.findStudentRanking(studentId));
+        response.put("themes", profileRepository.findThemePerformance(studentId));
+        response.put("activities", profileRepository.findActivityPerformance(studentId));
+
+        return response;
+    }
+
+
+    // Desvincula a un alumno del grupo; solo el docente dueño del grupo puede hacerlo.
+    public void removeStudent(String groupId, String studentId, String teacherId) {
+
+        ownershipValidator.assertTeacherOwnsGroup(groupId, teacherId);
+
+        User student = authRepository.findById(studentId)
+                .orElseThrow(() -> new NotFoundException("Alumno no encontrado."));
+
+        if (student.getRole() != Role.STUDENT || !groupId.equals(student.getGroupId())) {
+            throw new ValidationException(
+                    List.of("El alumno no pertenece a este grupo.")
+            );
+        }
+
+        boolean removed = studentRepository.leaveGroup(studentId);
+
+        if (!removed) {
+            throw new NotFoundException("No se pudo desvincular al alumno del grupo.");
+        }
     }
 
 

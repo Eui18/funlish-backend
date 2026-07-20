@@ -56,6 +56,7 @@ import com.example.services.StudentService;
 import com.example.services.TopicService;
 import com.example.services.TriviaService;
 import com.example.services.UnitService;
+import com.example.utils.OwnershipValidator;
 
 public class DependencyContainer {
 
@@ -77,8 +78,36 @@ public class DependencyContainer {
 
     public DependencyContainer(Connection connection) {
 
-        // Módulo Auth
+        // ==========================================================
+        // FASE 1: Repositories. Se construyen todos primero porque
+        // OwnershipValidator y varios Services (Group, Profile...)
+        // necesitan repositorios de otros módulos.
+        // ==========================================================
         var authRepository = new AuthRepositoryImpl(connection);
+        var groupRepository = new GroupRepositoryImpl(connection);
+        var studentRepository = new StudentRepositoryImpl(connection);
+        var unitRepository = new UnitRepositoryImpl(connection);
+        var topicRepository = new TopicRepositoryImpl(connection);
+        var resourceRepository = new ResourceRepositoryImpl(connection);
+        var activityRepository = new ActivityRepositoryImpl(connection);
+        var triviaRepository = new TriviaRepositoryImpl(connection);
+        var scrambleRepository = new ScrambleRepositoryImpl(connection);
+        var activityStudentRepository = new ActivityStudentRepositoryImpl(connection);
+        var studentGameRepository = new StudentGameRepositoryImpl(connection);
+        var profileRepository = new ProfileRepositoryImpl(connection);
+        var forumRepository = new ForumRepositoryImpl(connection);
+        var commentRepository = new CommentRepositoryImpl(connection);
+
+        // Validador de propiedad (docente dueño del grupo, en última instancia,
+        // del recurso sobre el que está operando). Reutilizado por todos los
+        // módulos que restringen edición/eliminación al docente propietario.
+        var ownershipValidator = new OwnershipValidator(groupRepository, unitRepository, topicRepository);
+
+        // ==========================================================
+        // FASE 2: Services, Controllers y Routes.
+        // ==========================================================
+
+        // Módulo Auth
         this.jwtService = new JwtService();
         var jwtService = this.jwtService;
         var authService = new AuthService(authRepository, jwtService);
@@ -86,76 +115,63 @@ public class DependencyContainer {
         this.authRoutes = new AuthRoutes(authController);
 
         //Modulo grupo
-        var groupRepository = new GroupRepositoryImpl(connection);
-        var groupService = new GroupService(groupRepository, authRepository);
+        var groupService = new GroupService(groupRepository, authRepository, studentRepository, profileRepository, ownershipValidator);
         var groupController = new GroupController(groupService);
         this.groupRoutes = new GroupRoutes(groupController);
-    
+
         //student
-        var studentRepository = new StudentRepositoryImpl(connection);
         var studentService = new StudentService(studentRepository, groupRepository);
         var studentController = new StudentController(studentService);
         this.studentRoutes = new StudentRoutes(studentController);
 
         //unit
-        var unitRepository = new UnitRepositoryImpl(connection);
-        var unitService = new UnitService(unitRepository, groupRepository, authRepository);
+        var unitService = new UnitService(unitRepository, groupRepository, authRepository, ownershipValidator);
         var unitController = new UnitController (unitService);
         this.unitRoutes = new UnitRoutes(unitController);
 
         // Topic
-        var topicRepository = new TopicRepositoryImpl(connection);
-        var topicService = new TopicService(topicRepository, unitRepository, authRepository);
+        var topicService = new TopicService(topicRepository, unitRepository, authRepository, ownershipValidator);
         var topicController = new TopicController(topicService);
         this.topicRoutes = new TopicRoutes(topicController);
 
         // Resource
-        var resourceRepository = new ResourceRepositoryImpl(connection);
-        var resourceService = new ResourceService(resourceRepository, topicRepository, authRepository);
+        var resourceService = new ResourceService(resourceRepository, topicRepository, authRepository, ownershipValidator);
         var resourceController = new ResourceController(resourceService);
         this.resourceRoutes = new ResourceRoutes(resourceController);
 
         //activity
-        var activityRepository = new ActivityRepositoryImpl(connection);
-        var triviaRepository = new TriviaRepositoryImpl(connection);
-        var scrambleRepository = new ScrambleRepositoryImpl(connection);
-        this.activityService = new ActivityService(activityRepository, topicRepository, unitRepository, authRepository, triviaRepository, scrambleRepository);
+        this.activityService = new ActivityService(activityRepository, topicRepository, unitRepository, authRepository, triviaRepository, scrambleRepository, ownershipValidator);
         var activityService = this.activityService;
         var activityController = new ActivityController(activityService);
         this.activityRoutes = new ActivityRoutes(activityController);
 
         //trivia
-        var triviaService = new TriviaService(triviaRepository, activityRepository, authRepository);
+        var triviaService = new TriviaService(triviaRepository, activityRepository, authRepository, ownershipValidator);
         var triviaController = new TriviaController(triviaService);
         this.triviaRoutes = new TriviaRoutes(triviaController);
 
         //scramble
-        var scrambleService = new ScrambleService(scrambleRepository, activityRepository, authRepository);
+        var scrambleService = new ScrambleService(scrambleRepository, activityRepository, authRepository, ownershipValidator);
         var scrambleController = new ScrambleController(scrambleService);
         this.scrambleRoutes = new ScrambleRoutes(scrambleController);
 
         //actividad estudiante
-        var activityStudentRepository = new ActivityStudentRepositoryImpl(connection);
         var activityStudentService = new ActivityStudentService(activityStudentRepository, activityRepository, authRepository);
         var activityStudentController = new ActivityStudentController(activityStudentService);
         this.activityStudentRoutes = new ActivityStudentRoutes(activityStudentController);
 
         // Student Game
-        var studentGameRepository = new StudentGameRepositoryImpl(connection);
         var studentGameService = new StudentGameService(studentGameRepository,activityStudentRepository,activityRepository);
         var studentGameController = new StudentGameController(studentGameService);
         this.studentGameRoutes = new StudentGameRoutes(studentGameController);
-        
+
 
         // Perfil y estadísticas
-        var profileRepository = new ProfileRepositoryImpl(connection);
         var profileService = new ProfileService(profileRepository, authRepository);
         var profileController = new ProfileController(profileService);
         this.profileRoutes = new ProfileRoutes(profileController);
 
         // Foro
-        var forumRepository = new ForumRepositoryImpl(connection);
-        var commentRepository = new CommentRepositoryImpl(connection);
         var forumService = new ForumService(forumRepository, commentRepository, groupRepository, authRepository);
         var forumController = new ForumController(forumService);
         this.forumRoutes = new ForumRoutes(forumController);
