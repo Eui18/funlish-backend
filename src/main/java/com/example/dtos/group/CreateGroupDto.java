@@ -16,13 +16,13 @@ public class CreateGroupDto {
 
     @NotNull(message = "El cuatrimestre es obligatorio")
     @Min(value = 1, message = "El cuatrimestre debe de ser mayor o igual a 1" )
-    @Max(value = 11, message = "El cuatrimestre no es válido")
+    @Max(value = 9, message = "El cuatrimestre no es válido")
     private Integer semester;
 
     @NotBlank
     @Pattern(
-        regexp = "^[A-Z]$",
-        message = "El grupo debe ser una sola letra mayúscula."
+        regexp = "^[A-J]$",
+        message = "El grupo debe ser una sola letra mayúscula que este entre la A y J"
     )
     private String group;
 
