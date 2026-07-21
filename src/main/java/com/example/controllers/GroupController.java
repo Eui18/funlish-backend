@@ -75,6 +75,14 @@ public class GroupController {
         context.json(Map.of("students", total));
     }
 
+    // GET /groups/{id}/ranking — ranking del grupo para sus miembros.
+    public void getRanking(Context context) {
+
+        String groupId = context.pathParam("id");
+        String userId = context.attribute("userId");
+        context.json(groupService.getGroupRanking(groupId, userId));
+    }
+
     // GET /groups/{groupId}/students/{studentId}/profile
     public void getStudentProfile(Context context) {
 

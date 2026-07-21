@@ -13,6 +13,7 @@ import com.example.dtos.activityStudent.ReviewDto;
 import com.example.exceptions.NotFoundException;
 import com.example.exceptions.ValidationException;
 import com.example.models.activity.Activity;
+import com.example.models.activity.ActivityStatus;
 import com.example.models.activity.ActivityType;
 import com.example.models.activityStudent.ActivityStudent;
 import com.example.models.activityStudent.ActivityStudentStatus;
@@ -299,6 +300,69 @@ public class StudentGameService {
                 percentage,
                 answers
         );
+    }
+
+
+    // Cierra automáticamente un intento cuyo tiempo ya terminó y devuelve
+    // su revisión. Reutiliza la calificación existente: las respuestas ya
+    // enviadas conservan su puntaje, las no respondidas se registran como
+    // incorrectas (0 puntos) y finishActivity aplica timeSpent, estado
+    // COMPLETADA y bono por tiempo. No modifica el modelo ni la BD.
+    public ReviewDto finishByTimeout(String activityStudentId, String studentId) {
+
+        ActivityStudent attempt = activityStudentRepository.findById(activityStudentId)
+                .orElseThrow(() -> new NotFoundException("Intento no encontrado."));
+
+        validateOwnership(attempt, studentId);
+
+        // Idempotente: si el intento ya fue cerrado (por refresco, reingreso
+        // o doble llamada), solo se devuelve la revisión existente.
+        if (attempt.getStatus() == ActivityStudentStatus.COMPLETADA) {
+            return getReview(activityStudentId, studentId);
+        }
+
+        Activity activity = activityRepository.findById(attempt.getActivityId())
+                .orElseThrow(() -> new NotFoundException("Actividad no encontrada."));
+
+        // Verificar que el tiempo realmente terminó: por la duración del
+        // intento o porque la ventana de la actividad ya cerró.
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime attemptDeadline = attempt.getStartDate().plusMinutes(activity.getDurationMinutes());
+
+        boolean activityClosed = activity.getStatus() == ActivityStatus.FINISHED;
+        boolean windowClosed = activity.getEndDate() != null && activity.getEndTime() != null
+                && now.isAfter(LocalDateTime.of(activity.getEndDate(), activity.getEndTime()));
+
+        boolean timeEnded = !now.isBefore(attemptDeadline) || activityClosed || windowClosed;
+
+        if (!timeEnded) {
+            throw new ValidationException(List.of("El tiempo del intento aún no ha terminado."));
+        }
+
+        // Registrar como incorrectas las preguntas/retos no respondidos
+        // (desde lastQuestion hasta el total). Reutiliza saveAnswer.
+        int total = activity.getType() == ActivityType.TRIVIA
+                ? repository.countTriviaQuestions(activity.getId())
+                : repository.countScrambleChallenges(activity.getId());
+
+        for (int i = attempt.getLastQuestion(); i <= total; i++) {
+
+            final int number = i;
+
+            if (activity.getType() == ActivityType.TRIVIA) {
+                repository.findTriviaId(activity.getId(), number).ifPresent(triviaId ->
+                        repository.saveAnswer(activityStudentId, triviaId, null, number, "", false, BigDecimal.ZERO));
+            } else {
+                repository.findScrambleId(activity.getId(), number).ifPresent(scrambleId ->
+                        repository.saveAnswer(activityStudentId, null, scrambleId, number, "", false, BigDecimal.ZERO));
+            }
+        }
+
+        // Cierra el intento con la lógica ya existente (timeSpent,
+        // deliveryDate, estado COMPLETADA y bono por tiempo).
+        finishActivity(attempt);
+
+        return getReview(activityStudentId, studentId);
     }
 
 

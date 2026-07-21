@@ -26,6 +26,9 @@ public class StudentGameRoutes {
 
         // Revisión de respuestas al finalizar
         app.get("/student-games/{activityStudentId}/review", controller::getReview );
-        
+
+        // Cierre automático del intento cuando el tiempo terminó
+        app.post("/student-games/{activityStudentId}/finish", controller::finishByTimeout );
+
     }
 }

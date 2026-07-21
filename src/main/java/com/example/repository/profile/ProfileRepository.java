@@ -27,4 +27,7 @@ public interface ProfileRepository {
     List<ThemePerformanceDto> findWorstThemes(String teacherId);
     List<ActivityPerformanceDto> findActivityTypePerformance(String teacherId);
     List<StudentSummaryDto> findStudents(String teacherId);
+
+    // RANKING DE UN GRUPO (accesible a los miembros del grupo)
+    List<StudentSummaryDto> findGroupRanking(String groupId);
 }

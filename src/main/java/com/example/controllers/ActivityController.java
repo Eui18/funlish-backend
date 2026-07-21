@@ -88,4 +88,12 @@ public class ActivityController {
         context.json(activityService.findAll(context.pathParam("topicId")));
     }
 
+    // GET /activities/{id}/items-count — solo el número de ítems (sin
+    // exponer preguntas ni respuestas correctas al alumno).
+    public void itemsCount(Context context) {
+
+        int total = activityService.countItems(context.pathParam("id"));
+        context.json(Map.of("total", total));
+    }
+
 }

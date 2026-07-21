@@ -1,6 +1,7 @@
 package com.example.repository.scramble;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,10 +14,10 @@ import com.example.models.scramble.ScrambleType;
 
 public class ScrambleRepositoryImpl implements ScrambleRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public ScrambleRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public ScrambleRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -33,7 +34,7 @@ public class ScrambleRepositoryImpl implements ScrambleRepository {
                 )
                 VALUES (?, ?, ?, ?, ?)
                 """;
-        try ( PreparedStatement ps = connection.prepareStatement(sql) ) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql) ) {
 
             ps.setString(1, scramble.getId());
             ps.setString(2, scramble.getActivityId());
@@ -68,7 +69,7 @@ public class ScrambleRepositoryImpl implements ScrambleRepository {
                 WHERE id_actividad = ?
                 ORDER BY numero_reto
                 """;
-        try ( PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
 
@@ -112,7 +113,7 @@ public class ScrambleRepositoryImpl implements ScrambleRepository {
                 FROM actividad_scramble
                 WHERE id = ?
                 """;
-        try( PreparedStatement ps = connection.prepareStatement(sql) ) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql) ) {
             ps.setString(1,id);
 
             ResultSet rs = ps.executeQuery();
@@ -147,7 +148,7 @@ public class ScrambleRepositoryImpl implements ScrambleRepository {
 
         String sql =
                 "DELETE FROM actividad_scramble WHERE id = ?";
-        try(PreparedStatement ps = connection.prepareStatement(sql)
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)
         ){
             ps.setString(1,id);
 
@@ -171,7 +172,7 @@ public class ScrambleRepositoryImpl implements ScrambleRepository {
                 WHERE id_actividad = ?
                 AND contenido_correcto = ?
                 """;
-        try( PreparedStatement ps = connection.prepareStatement(sql) ){
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql) ){
 
             ps.setString(1, activityId);
             ps.setString(2, content);
@@ -199,7 +200,7 @@ public class ScrambleRepositoryImpl implements ScrambleRepository {
                 FROM actividad_scramble
                 WHERE id_actividad = ?
                 """;
-        try(PreparedStatement ps = connection.prepareStatement(sql)){
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)){
 
             ps.setString(1, activityId);
 

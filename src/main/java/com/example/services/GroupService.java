@@ -175,6 +175,31 @@ public class GroupService {
     }
 
 
+    // Ranking del grupo, visible para sus miembros: el docente dueño del
+    // grupo o un alumno que pertenece a ese grupo. Reutiliza la lógica de
+    // puntaje ya existente (puntaje + bono, agrupado por alumno).
+    public List<com.example.dtos.profile.StudentSummaryDto> getGroupRanking(String groupId, String userId) {
+
+        Group group = repository.findById(groupId)
+                .orElseThrow(() -> new NotFoundException("Grupo no encontrado."));
+
+        User user = authRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado."));
+
+        boolean esDocenteDueno = user.getRole() == Role.TEACHER
+                && group.getTeacherId().equals(userId);
+
+        boolean esAlumnoDelGrupo = user.getRole() == Role.STUDENT
+                && groupId.equals(user.getGroupId());
+
+        if (!esDocenteDueno && !esAlumnoDelGrupo) {
+            throw new ValidationException(List.of("No perteneces a este grupo."));
+        }
+
+        return profileRepository.findGroupRanking(groupId);
+    }
+
+
     // Perfil completo de un alumno del grupo, consultado por el docente dueño del grupo.
     public Map<String, Object> getStudentProfileForTeacher(String groupId, String studentId, String teacherId) {
 

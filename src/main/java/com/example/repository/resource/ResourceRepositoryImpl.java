@@ -1,6 +1,7 @@
 package com.example.repository.resource;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,10 +14,10 @@ import com.example.models.resource.ResourceType;
 
 public class ResourceRepositoryImpl implements ResourceRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public ResourceRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public ResourceRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, resource.getId());
             statement.setString(2, resource.getTopicId());
@@ -70,7 +71,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
                 ORDER BY nombre
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, topicId);
 
@@ -103,7 +104,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -134,7 +135,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, resource.getName());
             statement.setString(2, resource.getType().name());
@@ -154,7 +155,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
         String sql = "DELETE FROM material WHERE id = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -175,7 +176,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
                 AND nombre = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, topicId);
             statement.setString(2, name);

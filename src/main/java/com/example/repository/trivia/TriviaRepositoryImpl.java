@@ -1,6 +1,7 @@
 package com.example.repository.trivia;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,10 +14,10 @@ import com.example.models.trivia.TriviaQuestion;
 
 public class TriviaRepositoryImpl implements TriviaRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public TriviaRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public TriviaRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -28,7 +29,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
                 WHERE id_actividad = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, activityId);
 
@@ -59,7 +60,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
                 VALUES(?,?,?,?)
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, trivia.getId());
             statement.setString(2, trivia.getActivityId());
@@ -87,7 +88,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
                 VALUES(?,?,?,?)
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, option.getId());
             statement.setString(2, option.getTriviaId());
@@ -111,7 +112,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
                 WHERE id = ?
                 """;
 
-        try(PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, question.getStatement());
             ps.setString(2, question.getId());
@@ -135,7 +136,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
                 WHERE id_trivia = ?
                 """;
 
-        try(PreparedStatement ps = connection.prepareStatement(deleteSql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(deleteSql)) {
 
             ps.setString(1, triviaId);
 
@@ -168,7 +169,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -206,7 +207,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
 
         List<TriviaQuestion> questions = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, activityId);
 
@@ -252,7 +253,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
 
         List<Option> options = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, triviaId);
 
@@ -282,7 +283,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -309,8 +310,7 @@ public class TriviaRepositoryImpl implements TriviaRepository {
                 WHERE id = ?
                 """;
 
-        try (
-            PreparedStatement select = connection.prepareStatement(selectSql);
+        try (Connection connection = dataSource.getConnection(); PreparedStatement select = connection.prepareStatement(selectSql);
             PreparedStatement update = connection.prepareStatement(updateSql)
         ) {
 

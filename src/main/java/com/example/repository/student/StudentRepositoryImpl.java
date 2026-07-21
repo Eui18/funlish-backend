@@ -1,6 +1,7 @@
 package com.example.repository.student;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,10 +11,10 @@ import com.example.models.user.User;
 
 public class StudentRepositoryImpl implements StudentRepository  {
     
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public StudentRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public StudentRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -28,11 +29,11 @@ public class StudentRepositoryImpl implements StudentRepository  {
                     contrasena AS password,
                     rol AS role,
                     id_grupo AS groupId
-                FROM USUARIO
+                FROM usuario
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -55,12 +56,12 @@ public class StudentRepositoryImpl implements StudentRepository  {
     public boolean joinGroup(String studentId, String groupId) {
 
         String sql = """
-                UPDATE USUARIO
+                UPDATE usuario
                 SET id_grupo = ?
                 WHERE id = ? and rol = 'STUDENT'
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, groupId);
             statement.setString(2, studentId);
@@ -77,12 +78,12 @@ public class StudentRepositoryImpl implements StudentRepository  {
     public boolean leaveGroup(String studentId) {
 
         String sql = """
-                UPDATE USUARIO
+                UPDATE usuario
                 SET id_grupo = NULL
                 WHERE id = ? and rol = 'STUDENT'
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, studentId);
 

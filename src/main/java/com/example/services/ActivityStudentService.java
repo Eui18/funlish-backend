@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.example.dtos.activityStudent.ActivityStudentResponseDto;
 import com.example.exceptions.NotFoundException;
+import com.example.exceptions.ResourceAlreadyExistsException;
 import com.example.exceptions.ValidationException;
 import com.example.models.activity.Activity;
 import com.example.models.activity.ActivityStatus;
@@ -84,7 +85,18 @@ public class ActivityStudentService {
                 1
         );
 
-        repository.create(attempt);
+        try {
+            repository.create(attempt);
+        } catch (ResourceAlreadyExistsException e) {
+            // Carrera: otra petición concurrente (p. ej. el doble montaje de
+            // React StrictMode) creó el intento entre el findByStudentAndActivity
+            // de arriba y este INSERT. Se recupera y se devuelve ese intento,
+            // por lo que start es idempotente y nunca lanza 500 por duplicado.
+            return repository.findByStudentAndActivity(studentId, activityId)
+                    .map(this::toResponseDto)
+                    .orElseThrow(() -> new NotFoundException(
+                            "No se pudo recuperar el intento existente."));
+        }
 
         return toResponseDto(attempt);
     }

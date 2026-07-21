@@ -1,6 +1,6 @@
 package com.example;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 
 import com.example.services.ResourceService;
 import com.example.services.ScrambleService;
@@ -76,27 +76,27 @@ public class DependencyContainer {
     public final JwtService jwtService;
     public final ActivityService activityService;
 
-    public DependencyContainer(Connection connection) {
+    public DependencyContainer(DataSource dataSource) {
 
         // ==========================================================
         // FASE 1: Repositories. Se construyen todos primero porque
         // OwnershipValidator y varios Services (Group, Profile...)
         // necesitan repositorios de otros módulos.
         // ==========================================================
-        var authRepository = new AuthRepositoryImpl(connection);
-        var groupRepository = new GroupRepositoryImpl(connection);
-        var studentRepository = new StudentRepositoryImpl(connection);
-        var unitRepository = new UnitRepositoryImpl(connection);
-        var topicRepository = new TopicRepositoryImpl(connection);
-        var resourceRepository = new ResourceRepositoryImpl(connection);
-        var activityRepository = new ActivityRepositoryImpl(connection);
-        var triviaRepository = new TriviaRepositoryImpl(connection);
-        var scrambleRepository = new ScrambleRepositoryImpl(connection);
-        var activityStudentRepository = new ActivityStudentRepositoryImpl(connection);
-        var studentGameRepository = new StudentGameRepositoryImpl(connection);
-        var profileRepository = new ProfileRepositoryImpl(connection);
-        var forumRepository = new ForumRepositoryImpl(connection);
-        var commentRepository = new CommentRepositoryImpl(connection);
+        var authRepository = new AuthRepositoryImpl(dataSource);
+        var groupRepository = new GroupRepositoryImpl(dataSource);
+        var studentRepository = new StudentRepositoryImpl(dataSource);
+        var unitRepository = new UnitRepositoryImpl(dataSource);
+        var topicRepository = new TopicRepositoryImpl(dataSource);
+        var resourceRepository = new ResourceRepositoryImpl(dataSource);
+        var activityRepository = new ActivityRepositoryImpl(dataSource);
+        var triviaRepository = new TriviaRepositoryImpl(dataSource);
+        var scrambleRepository = new ScrambleRepositoryImpl(dataSource);
+        var activityStudentRepository = new ActivityStudentRepositoryImpl(dataSource);
+        var studentGameRepository = new StudentGameRepositoryImpl(dataSource);
+        var profileRepository = new ProfileRepositoryImpl(dataSource);
+        var forumRepository = new ForumRepositoryImpl(dataSource);
+        var commentRepository = new CommentRepositoryImpl(dataSource);
 
         // Validador de propiedad (docente dueño del grupo, en última instancia,
         // del recurso sobre el que está operando). Reutilizado por todos los

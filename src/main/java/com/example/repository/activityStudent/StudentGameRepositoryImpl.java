@@ -2,6 +2,7 @@ package com.example.repository.activityStudent;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,10 +16,10 @@ import com.example.dtos.activityStudent.AnswerReviewDto;
 
 public class StudentGameRepositoryImpl implements StudentGameRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public StudentGameRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public StudentGameRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -33,7 +34,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 AND numero_pregunta = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
             ps.setInt(2, questionNumber);
@@ -74,7 +75,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
 
         List<String> options = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, triviaId);
 
@@ -107,7 +108,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 AND numero_pregunta = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
             ps.setInt(2, questionNumber);
@@ -140,7 +141,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 AND numero_reto = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
             ps.setInt(2, challengeNumber);
@@ -172,7 +173,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 AND numero_reto = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
             ps.setInt(2, challengeNumber);
@@ -238,7 +239,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 AND o.correcta = true
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
             ps.setInt(2, questionNumber);
@@ -270,7 +271,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 AND numero_reto = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
             ps.setInt(2, challengeNumber);
@@ -300,7 +301,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 WHERE id_actividad = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
 
@@ -327,7 +328,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 WHERE id_actividad = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityId);
 
@@ -369,7 +370,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
                 VALUES(?,?,?,?,?,?,?,?)
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, java.util.UUID.randomUUID().toString());
             ps.setString(2, activityStudentId);
@@ -405,7 +406,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
 
         List<AnswerReviewDto> reviews = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityStudentId);
 
@@ -448,7 +449,7 @@ public class StudentGameRepositoryImpl implements StudentGameRepository {
 
         List<AnswerReviewDto> reviews = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, activityStudentId);
 

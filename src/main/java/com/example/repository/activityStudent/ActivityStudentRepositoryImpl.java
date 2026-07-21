@@ -1,21 +1,23 @@
 package com.example.repository.activityStudent;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Optional;
 
+import com.example.exceptions.ResourceAlreadyExistsException;
 import com.example.models.activityStudent.ActivityStudent;
 import com.example.models.activityStudent.ActivityStudentStatus;
 
 public class ActivityStudentRepositoryImpl implements ActivityStudentRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public ActivityStudentRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public ActivityStudentRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -35,7 +37,7 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
-        try( PreparedStatement ps = connection.prepareStatement(sql)
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)
         ){
 
             ps.setString(1, activityStudent.getId());
@@ -73,6 +75,19 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
 
         }catch(SQLException e){
 
+            // La restricción UNIQUE(id_actividad, id_alumno) es la fuente de
+            // verdad ante carreras: si otra petición concurrente ya creó el
+            // intento, el INSERT viola la restricción. Se señala como "ya
+            // existe" para que el servicio lo recupere de forma idempotente,
+            // en lugar de devolver un 500.
+            if (e instanceof java.sql.SQLIntegrityConstraintViolationException
+                    || (e.getSQLState() != null && e.getSQLState().startsWith("23"))) {
+
+                throw new ResourceAlreadyExistsException(
+                    "El alumno ya tiene un intento para esta actividad."
+                );
+            }
+
             throw new RuntimeException(
                 "Error al crear intento: "
                 + e.getMessage()
@@ -100,8 +115,7 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
             FROM actividad_alumno
             WHERE id = ?
                 """;
-        try(
-            PreparedStatement ps =
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps =
                 connection.prepareStatement(sql)
         ){
             ps.setString(1,id);
@@ -145,8 +159,7 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
             AND id_actividad = ?
                 """;
 
-        try(
-            PreparedStatement ps =
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps =
                 connection.prepareStatement(sql)
         ){
 
@@ -187,8 +200,7 @@ public class ActivityStudentRepositoryImpl implements ActivityStudentRepository 
                     ultima_pregunta = ?
                 WHERE id = ?
                 """;
-        try(
-            PreparedStatement ps =
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps =
                 connection.prepareStatement(sql)
         ){
 

@@ -1,6 +1,7 @@
 package com.example.repository.profile;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,10 +19,10 @@ import com.example.dtos.profile.ThemePerformanceDto;
 
 public class ProfileRepositoryImpl implements ProfileRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public ProfileRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public ProfileRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -33,7 +34,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
             WHERE id = ?
             """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, studentId);
 
@@ -70,7 +71,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
             WHERE aa.id_alumno = ?
             """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, studentId);
 
@@ -122,7 +123,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
             WHERE id = ?
             """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, studentId);
 
@@ -149,20 +150,23 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     @Override
     public List<ThemePerformanceDto> findThemePerformance(String studentId) {
 
+        // Solo el puntaje base (sin bonus, que puede duplicar el máximo) y
+        // acotado a [0, 100] con denominador protegido contra división
+        // entre cero.
         String sql = """
             SELECT
                 t.titulo,
-                ROUND(AVG(
-                    ((aa.puntaje + aa.bonus_puntos) /
-                    (
+                ROUND(AVG(LEAST(100, GREATEST(0,
+                    aa.puntaje * 100.0 /
+                    NULLIF(
                         a.puntaje_por_pregunta *
                         CASE
                             WHEN a.tipo_actividad = 'TRIVIA'
                             THEN (SELECT COUNT(*) FROM actividad_trivia at WHERE at.id_actividad = a.id)
                             ELSE (SELECT COUNT(*) FROM actividad_scramble ac WHERE ac.id_actividad = a.id)
                         END
-                    )) * 100
-                ), 2) AS porcentaje
+                    , 0)
+                ))), 2) AS porcentaje
 
             FROM actividad_alumno aa
             JOIN actividad a ON a.id = aa.id_actividad
@@ -177,7 +181,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
         List<ThemePerformanceDto> themes = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, studentId);
 
@@ -210,15 +214,16 @@ public class ProfileRepositoryImpl implements ProfileRepository {
             SELECT
                 a.titulo,
                 a.tipo_actividad,
-                ROUND(
-                    ((aa.puntaje + aa.bonus_puntos) /
-                    (a.puntaje_por_pregunta *
+                ROUND(LEAST(100, GREATEST(0,
+                    aa.puntaje * 100.0 /
+                    NULLIF(a.puntaje_por_pregunta *
                     CASE
                         WHEN a.tipo_actividad = 'TRIVIA'
                         THEN (SELECT COUNT(*) FROM actividad_trivia at WHERE at.id_actividad = a.id)
                         ELSE (SELECT COUNT(*) FROM actividad_scramble ac WHERE ac.id_actividad = a.id)
                     END
-                    )) * 100,
+                    , 0)
+                )),
                 2) AS porcentaje
 
             FROM actividad_alumno aa
@@ -233,7 +238,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
         List<ActivityPerformanceDto> activities = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, studentId);
 
@@ -266,17 +271,17 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
         String sql = """
             SELECT
-                COALESCE(AVG(
-                    (aa.puntaje + aa.bonus_puntos) /
-                    (
+                COALESCE(AVG(LEAST(100, GREATEST(0,
+                    aa.puntaje * 100.0 /
+                    NULLIF(
                         a.puntaje_por_pregunta *
                         CASE
                             WHEN a.tipo_actividad = 'TRIVIA'
                             THEN (SELECT COUNT(*) FROM actividad_trivia at WHERE at.id_actividad = a.id)
                             ELSE (SELECT COUNT(*) FROM actividad_scramble ac WHERE ac.id_actividad = a.id)
                         END
-                    ) * 100
-                ), 0) AS promedio,
+                    , 0)
+                ))), 0) AS promedio,
 
                 COUNT(DISTINCT u.id) AS alumnos,
 
@@ -291,7 +296,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
             WHERE g.id_docente = ?
             """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, teacherId);
 
@@ -324,19 +329,17 @@ public class ProfileRepositoryImpl implements ProfileRepository {
         String sql = """
             SELECT
                 t.titulo,
-                ROUND(AVG(
-                    (
-                        (aa.puntaje + aa.bonus_puntos) /
-                        (
-                            a.puntaje_por_pregunta *
-                            CASE
-                                WHEN a.tipo_actividad = 'TRIVIA'
-                                THEN (SELECT COUNT(*) FROM actividad_trivia at WHERE at.id_actividad = a.id)
-                                ELSE (SELECT COUNT(*) FROM actividad_scramble ac WHERE ac.id_actividad = a.id)
-                            END
-                        )
-                    ) * 100
-                ), 2) AS porcentaje
+                ROUND(AVG(LEAST(100, GREATEST(0,
+                    aa.puntaje * 100.0 /
+                    NULLIF(
+                        a.puntaje_por_pregunta *
+                        CASE
+                            WHEN a.tipo_actividad = 'TRIVIA'
+                            THEN (SELECT COUNT(*) FROM actividad_trivia at WHERE at.id_actividad = a.id)
+                            ELSE (SELECT COUNT(*) FROM actividad_scramble ac WHERE ac.id_actividad = a.id)
+                        END
+                    , 0)
+                ))), 2) AS porcentaje
 
             FROM actividad_alumno aa
             JOIN actividad a ON a.id = aa.id_actividad
@@ -354,7 +357,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
         List<ThemePerformanceDto> themes = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, teacherId);
 
@@ -387,19 +390,17 @@ public class ProfileRepositoryImpl implements ProfileRepository {
         String sql = """
             SELECT
                 a.tipo_actividad,
-                ROUND(AVG(
-                    (
-                        (aa.puntaje + aa.bonus_puntos) /
-                        (
-                            a.puntaje_por_pregunta *
-                            CASE
-                                WHEN a.tipo_actividad = 'TRIVIA'
-                                THEN (SELECT COUNT(*) FROM actividad_trivia at WHERE at.id_actividad = a.id)
-                                ELSE (SELECT COUNT(*) FROM actividad_scramble ac WHERE ac.id_actividad = a.id)
-                            END
-                        )
-                    ) * 100
-                ), 2) AS porcentaje
+                ROUND(AVG(LEAST(100, GREATEST(0,
+                    aa.puntaje * 100.0 /
+                    NULLIF(
+                        a.puntaje_por_pregunta *
+                        CASE
+                            WHEN a.tipo_actividad = 'TRIVIA'
+                            THEN (SELECT COUNT(*) FROM actividad_trivia at WHERE at.id_actividad = a.id)
+                            ELSE (SELECT COUNT(*) FROM actividad_scramble ac WHERE ac.id_actividad = a.id)
+                        END
+                    , 0)
+                ))), 2) AS porcentaje
 
             FROM actividad_alumno aa
             JOIN actividad a ON a.id = aa.id_actividad
@@ -415,7 +416,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
         List<ActivityPerformanceDto> activities = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, teacherId);
 
@@ -466,7 +467,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
 
         List<StudentSummaryDto> students = new ArrayList<>();
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setString(1, teacherId);
 
@@ -491,6 +492,61 @@ public class ProfileRepositoryImpl implements ProfileRepository {
         } catch (SQLException e) {
             throw new RuntimeException(
                 "Error obteniendo alumnos.",
+                e
+            );
+        }
+    }
+
+
+    // Mismo cálculo que findStudents pero acotado a un grupo, para que sus
+    // miembros (docente y alumnos) puedan ver el ranking del grupo.
+    @Override
+    public List<StudentSummaryDto> findGroupRanking(String groupId) {
+
+        String sql = """
+            SELECT
+                u.id,
+                u.nombre,
+                u.matricula,
+                COALESCE(SUM(aa.puntaje + aa.bonus_puntos), 0) AS puntos
+
+            FROM usuario u
+            LEFT JOIN actividad_alumno aa ON aa.id_alumno = u.id
+
+            WHERE u.id_grupo = ?
+            AND u.rol = 'STUDENT'
+
+            GROUP BY u.id, u.nombre, u.matricula
+            ORDER BY puntos DESC
+            """;
+
+        List<StudentSummaryDto> ranking = new ArrayList<>();
+
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, groupId);
+
+            ResultSet rs = ps.executeQuery();
+
+            int position = 1;
+
+            while (rs.next()) {
+                ranking.add(
+                    new StudentSummaryDto(
+                        rs.getString("id"),
+                        rs.getString("nombre"),
+                        rs.getString("matricula"),
+                        rs.getBigDecimal("puntos"),
+                        position++
+                    )
+                );
+            }
+
+            return ranking;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                "Error obteniendo el ranking del grupo.",
                 e
             );
         }

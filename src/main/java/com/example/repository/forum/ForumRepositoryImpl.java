@@ -1,6 +1,7 @@
 package com.example.repository.forum;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,10 +14,10 @@ import com.example.models.forum.Forum;
 
 public class ForumRepositoryImpl implements ForumRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public ForumRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public ForumRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -32,7 +33,7 @@ public class ForumRepositoryImpl implements ForumRepository {
 
         List<Forum> forums = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, groupId);
 
@@ -60,7 +61,7 @@ public class ForumRepositoryImpl implements ForumRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -86,7 +87,7 @@ public class ForumRepositoryImpl implements ForumRepository {
                 VALUES(?,?,?,?,?)
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, forum.getId());
             statement.setString(2, forum.getGroupId());
@@ -112,7 +113,7 @@ public class ForumRepositoryImpl implements ForumRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, forum.getTitle());
             statement.setString(2, forum.getDescription());
@@ -131,7 +132,7 @@ public class ForumRepositoryImpl implements ForumRepository {
 
         String sql = "DELETE FROM foro WHERE id = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 

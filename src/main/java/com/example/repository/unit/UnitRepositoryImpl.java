@@ -1,6 +1,7 @@
 package com.example.repository.unit;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,10 +13,10 @@ import com.example.models.unit.Unit;
 
 public class UnitRepositoryImpl implements UnitRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public UnitRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public UnitRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -27,7 +28,7 @@ public class UnitRepositoryImpl implements UnitRepository {
                 WHERE id_grupo = ?
                 ORDER BY numero
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, groupId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -47,7 +48,7 @@ public class UnitRepositoryImpl implements UnitRepository {
                 FROM unidad
                 WHERE id = ?
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
@@ -66,7 +67,7 @@ public class UnitRepositoryImpl implements UnitRepository {
                 INSERT INTO unidad(id, id_grupo, nombre, numero)
                 VALUES (?, ?, ?, ?)
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, unit.getId());
             statement.setString(2, unit.getGroupId());
             statement.setString(3, unit.getName());
@@ -86,7 +87,7 @@ public class UnitRepositoryImpl implements UnitRepository {
                 SET nombre = ?, numero = ?
                 WHERE id = ?
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, unit.getName());
             statement.setInt(2, unit.getNumber());
             statement.setString(3, unit.getId());
@@ -100,7 +101,7 @@ public class UnitRepositoryImpl implements UnitRepository {
     @Override
     public boolean delete(String id) {
         String sql = "DELETE FROM unidad WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -115,7 +116,7 @@ public class UnitRepositoryImpl implements UnitRepository {
                 FROM unidad
                 WHERE nombre = ? AND id_grupo = ?
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, name);
             statement.setString(2, groupId);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -136,7 +137,7 @@ public class UnitRepositoryImpl implements UnitRepository {
                 FROM unidad
                 WHERE id_grupo = ?
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, groupId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {

@@ -1,6 +1,7 @@
 package com.example.repository.topic;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,10 +13,10 @@ import com.example.models.topic.Topic;
 
 public class TopicRepositoryImpl implements TopicRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public TopicRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public TopicRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -32,7 +33,7 @@ public class TopicRepositoryImpl implements TopicRepository {
                 VALUES (?, ?, ?, ?, ?)
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, topic.getId());
             statement.setString(2, topic.getUnitId());
@@ -66,7 +67,7 @@ public class TopicRepositoryImpl implements TopicRepository {
                 ORDER BY numero
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, unitId);
 
@@ -98,7 +99,7 @@ public class TopicRepositoryImpl implements TopicRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -127,7 +128,7 @@ public class TopicRepositoryImpl implements TopicRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, topic.getTitle());
             statement.setString(2, topic.getDescription());
@@ -145,7 +146,7 @@ public class TopicRepositoryImpl implements TopicRepository {
 
         String sql = "DELETE FROM tema WHERE id = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -165,7 +166,7 @@ public class TopicRepositoryImpl implements TopicRepository {
                 WHERE id_unidad = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, unitId);
 
@@ -192,7 +193,7 @@ public class TopicRepositoryImpl implements TopicRepository {
                 LIMIT 1
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, unitId);
             statement.setString(2, title);

@@ -1,6 +1,7 @@
 package com.example.repository.forum;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,10 +14,10 @@ import com.example.models.forum.Comment;
 
 public class CommentRepositoryImpl implements CommentRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public CommentRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public CommentRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -32,7 +33,7 @@ public class CommentRepositoryImpl implements CommentRepository {
 
         List<Comment> comments = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, forumId);
 
@@ -60,7 +61,7 @@ public class CommentRepositoryImpl implements CommentRepository {
                 WHERE id = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -86,7 +87,7 @@ public class CommentRepositoryImpl implements CommentRepository {
                 VALUES(?,?,?,?)
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, comment.getId());
             statement.setString(2, comment.getForumId());
@@ -107,7 +108,7 @@ public class CommentRepositoryImpl implements CommentRepository {
 
         String sql = "DELETE FROM comentario WHERE id = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 

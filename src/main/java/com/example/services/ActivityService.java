@@ -279,6 +279,20 @@ public class ActivityService {
 
 
 
+    // Número de preguntas/retos de una actividad, SIN exponer su contenido
+    // ni las respuestas correctas (para el contador de progreso del alumno).
+    public int countItems(String activityId) {
+
+        Activity activity = activityRepository.findById(activityId)
+                .orElseThrow(() -> new IllegalArgumentException("Actividad no encontrada."));
+
+        return activity.getType() == ActivityType.TRIVIA
+                ? triviaRepository.findAll(activityId).size()
+                : scrambleRepository.findAll(activityId).size();
+    }
+
+
+
     // Finaliza automáticamente las actividades PUBLISHED cuya disponibilidad ya venció.
     // Llamado únicamente por ActivityStatusScheduler.
     public void finishExpiredActivities() {

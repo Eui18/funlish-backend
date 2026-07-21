@@ -25,6 +25,9 @@ public class GroupRoutes {
         app.get("/groups/{id}/students", groupController::findStudents);
         app.get("/groups/{id}/students/count", groupController::countStudents);
 
+        // Docente / Alumno miembro - Ranking del grupo (Top del grupo)
+        app.get("/groups/{id}/ranking", groupController::getRanking);
+
         // Perfil de un alumno del grupo, consultado por el docente dueño del grupo
         app.get("/groups/{groupId}/students/{studentId}/profile", groupController::getStudentProfile);
 

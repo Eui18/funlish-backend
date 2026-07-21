@@ -1,6 +1,7 @@
 package com.example.repository.auth;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Optional;
@@ -10,10 +11,10 @@ import com.example.models.user.User;
 
 public class AuthRepositoryImpl implements AuthRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public AuthRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public AuthRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -28,11 +29,11 @@ public class AuthRepositoryImpl implements AuthRepository {
                         contrasena AS password,
                         rol AS role,
                         id_grupo AS groupId
-                    FROM USUARIO
+                    FROM usuario
                     WHERE matricula = ? AND contrasena = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, tuition);
             statement.setString(2, password);
@@ -66,11 +67,11 @@ public class AuthRepositoryImpl implements AuthRepository {
     public User registerUser(User user) {
 
         String sql = """
-                    INSERT INTO USUARIO (id, nombre, matricula, correo, contrasena, rol)
+                    INSERT INTO usuario (id, nombre, matricula, correo, contrasena, rol)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, user.getId());
             statement.setString(2, user.getName());
@@ -96,9 +97,9 @@ public class AuthRepositoryImpl implements AuthRepository {
 
     @Override
     public boolean existsByTuitionOrEmail(String tuition, String email) {
-        String sql = "SELECT 1 FROM USUARIO WHERE matricula = ? OR correo = ? LIMIT 1";
+        String sql = "SELECT 1 FROM usuario WHERE matricula = ? OR correo = ? LIMIT 1";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, tuition);
             statement.setString(2, email);
 
@@ -122,12 +123,12 @@ public class AuthRepositoryImpl implements AuthRepository {
                     contrasena AS password,
                     rol AS role,
                     id_grupo AS groupId
-                FROM USUARIO
+                FROM usuario
                 WHERE id = ?
                 """;
 
 
-        try (PreparedStatement statement =
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement =
                 connection.prepareStatement(sql)) {
 
 
@@ -180,11 +181,11 @@ public class AuthRepositoryImpl implements AuthRepository {
                         contrasena AS password,
                         rol AS role,
                         id_grupo AS groupId
-                    FROM USUARIO
+                    FROM usuario
                     WHERE matricula = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, tuition);
 

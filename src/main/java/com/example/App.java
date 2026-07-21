@@ -1,6 +1,6 @@
 package com.example;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 import com.example.config.DatabaseConfig;
 import com.example.exceptions.UnauthorizedException;
 import com.example.utils.ActivityStatusScheduler;
@@ -16,8 +16,11 @@ public class App {
 
             Dotenv dotenv = Dotenv.load();
             DatabaseConfig databaseConfig = new DatabaseConfig(dotenv);
-            Connection connection = databaseConfig.getDataSource().getConnection();
-            DependencyContainer container = new DependencyContainer(connection);
+            // Se comparte el DataSource (pool Hikari), NUNCA un java.sql.Connection.
+            // Cada operación de repositorio toma una conexión del pool y la
+            // devuelve con try-with-resources.
+            DataSource dataSource = databaseConfig.getDataSource();
+            DependencyContainer container = new DependencyContainer(dataSource);
 
             Javalin app = Javalin.create(config -> {
                 config.bundledPlugins.enableCors(cors -> {

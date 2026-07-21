@@ -65,4 +65,17 @@ public class StudentGameController {
                 service.getReview(activityStudentId, studentId)
         );
     }
+
+
+    // Cierre automático del intento cuando el tiempo terminó; devuelve el
+    // mismo ReviewDto que /review.
+    public void finishByTimeout(Context context) {
+
+        String activityStudentId = context.pathParam("activityStudentId");
+        String studentId = context.attribute("userId");
+
+        context.json(
+                service.finishByTimeout(activityStudentId, studentId)
+        );
+    }
 }

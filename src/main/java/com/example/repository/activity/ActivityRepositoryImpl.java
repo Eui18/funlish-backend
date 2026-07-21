@@ -1,6 +1,7 @@
 package com.example.repository.activity;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,10 +17,10 @@ import com.example.models.activity.ActivityStatus;
 import com.example.models.activity.ActivityType;
 
 public class ActivityRepositoryImpl implements ActivityRepository {
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public ActivityRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public ActivityRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     //create
@@ -44,7 +45,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, activity.getId());
             statement.setString(2, activity.getTopicId());
@@ -87,7 +88,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             WHERE id = ?
             """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, activity.getTitle());
             statement.setString(2, activity.getDescription());
@@ -119,7 +120,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             WHERE id = ?
             """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, activityId);
 
@@ -142,7 +143,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             WHERE id = ?
             """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, activityId);
 
@@ -164,7 +165,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             WHERE id = ?
             """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -198,7 +199,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             WHERE id = ?
             """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, id);
 
@@ -242,7 +243,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
 
         List<Activity> activities = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, topicId);
 
@@ -273,7 +274,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             LIMIT 1
             """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, topicId);
             statement.setString(2, title);
@@ -300,7 +301,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
             LIMIT 1
             """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, activityId);
 
@@ -342,7 +343,7 @@ public class ActivityRepositoryImpl implements ActivityRepository {
 
         List<Activity> activities = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             ResultSet rs = statement.executeQuery();
 

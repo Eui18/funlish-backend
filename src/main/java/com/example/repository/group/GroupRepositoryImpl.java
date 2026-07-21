@@ -1,6 +1,7 @@
 package com.example.repository.group;
 
 import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,10 +15,10 @@ import com.example.models.user.Role;
 
 public class GroupRepositoryImpl implements GroupRepository{
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
-    public GroupRepositoryImpl(Connection connection) {
-        this.connection = connection;
+    public GroupRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     //docente
@@ -32,10 +33,10 @@ public class GroupRepositoryImpl implements GroupRepository{
                     grupo AS `group`,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
-                    FROM GRUPO 
+                    FROM grupo 
                     WHERE id_docente = ?
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)){
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)){
             
             statement.setString(1, teacherId);
 
@@ -62,10 +63,10 @@ public class GroupRepositoryImpl implements GroupRepository{
                     grupo AS `group`,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
-                    FROM GRUPO 
+                    FROM grupo 
                     WHERE id = ?
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)){
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)){
             statement.setString(1, id);
 
             try (ResultSet resultSet = statement.executeQuery();) {
@@ -88,7 +89,7 @@ public class GroupRepositoryImpl implements GroupRepository{
                 INSERT INTO grupo(id,id_docente,nombre,cuatrimestre,grupo,codigo_acceso)
                 VALUES(?,?,?,?,?,?)
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, group.getId());
             statement.setString(2, group.getTeacherId());
             statement.setString(3, group.getName());
@@ -112,9 +113,9 @@ public class GroupRepositoryImpl implements GroupRepository{
     @Override
     public boolean delete(String id) {
        
-        String sql = "DELETE FROM GRUPO WHERE id = ? ";
+        String sql = "DELETE FROM grupo WHERE id = ? ";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);
 
            int rows = statement.executeUpdate();
@@ -135,11 +136,11 @@ public class GroupRepositoryImpl implements GroupRepository{
 
         String sql = """
                 SELECT 1
-                FROM GRUPO
+                FROM grupo
                 WHERE codigo_acceso = ?
                 LIMIT 1
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, code);
 
@@ -156,11 +157,11 @@ public class GroupRepositoryImpl implements GroupRepository{
     public boolean update(Group group) {
 
         String sql = """
-                UPDATE GRUPO
+                UPDATE grupo
                 SET nombre = ?
                 WHERE id = ?
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, group.getName());
             statement.setString(2, group.getId());
@@ -186,10 +187,10 @@ public class GroupRepositoryImpl implements GroupRepository{
                     grupo AS `group`,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
-                    FROM GRUPO 
+                    FROM grupo 
                     WHERE cuatrimestre = ? and grupo = ? and id_docente = ? 
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)){
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)){
             statement.setInt(1,semester);
             statement.setString(2,group);
             statement.setString(3,teacherId);
@@ -219,11 +220,11 @@ public class GroupRepositoryImpl implements GroupRepository{
                     grupo AS `group`,
                     codigo_acceso AS accessCode,
                     id_docente AS teacherId
-                FROM GRUPO
+                FROM grupo
                 WHERE codigo_acceso = ?
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, accessCode);
 
@@ -253,11 +254,11 @@ public class GroupRepositoryImpl implements GroupRepository{
                     matricula AS tuition,
                     correo AS email,
                     rol AS role
-                FROM USUARIO
+                FROM usuario
                 WHERE id_grupo = ?
                 AND rol = 'STUDENT'
                 """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, groupId);
 
@@ -287,12 +288,12 @@ public class GroupRepositoryImpl implements GroupRepository{
 
         String sql = """
                 SELECT COUNT(*)
-                FROM USUARIO
+                FROM usuario
                 WHERE id_grupo = ?
                 AND rol = 'STUDENT'
                 """;
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, groupId);
 
